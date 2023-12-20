@@ -1,7 +1,7 @@
 FROM python:3.11-alpine
 
 ENV LANG C.UTF-8
-ENV TZ Asia/Tokyo
+# ENV TZ Asia/Tokyo
 ENV POETRY_VERSION=1.7.1
 
 # Poetryの設定
