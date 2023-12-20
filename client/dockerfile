@@ -1,0 +1,25 @@
+# Node.js lts image
+FROM node:lts
+
+# 環境変数の設定
+ENV LANG C.UTF-8
+ENV TZ Asia/Tokyo
+
+# 作業ディレクトリの設定
+WORKDIR /app
+
+# 依存関係のコピーとインストール
+COPY package.json package-lock.json ./
+
+# 依存関係のインストール
+RUN npm install
+
+# アプリケーションのコピー
+COPY . .
+
+# # Next.jsアプリケーションのビルド
+# RUN npm run build
+
+# アプリケーションの起動
+CMD ["npm", "run", "dev"] 
+#devで本番環境デプロイOK

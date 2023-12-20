@@ -1,0 +1,34 @@
+FROM python:3.11-alpine
+
+ENV LANG C.UTF-8
+ENV TZ Asia/Tokyo
+ENV POETRY_VERSION=1.7.1
+
+# Poetryの設定
+# POETRY_HOME 環境変数を設定して、Poetryのインストール先を /opt/poetry に指定
+# PATH 環境変数に POETRY_HOME/bin を追加して、Poetryの実行ファイルにパスを設定
+ENV POETRY_HOME=/opt/poetry
+ENV PATH="$POETRY_HOME/bin:$PATH"
+
+WORKDIR /app
+
+# Poetryのインストール
+# curl を使用してPoetryのインストーラーをダウンロードし実行
+# Poetryが /opt/poetry にインストールされるように設定
+# Dockerコンテナ内では仮想環境を作成しないため、poetry config virtualenvs.create false を設定
+RUN apk add --no-cache curl gcc musl-dev libffi-dev 
+RUN curl -sSL https://install.python-poetry.org | python3
+RUN poetry config virtualenvs.create false
+
+# pyproject.toml と poetry.lock をコピー
+COPY pyproject.toml poetry.lock* /app/
+
+# 依存関係のインストール
+RUN poetry install --no-dev --no-interaction --no-ansi
+
+# FastAPIアプリケーションのコピー
+COPY ./app /app/
+
+# FastAPIの起動
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+

@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  server:
+    build:
+      context: ./server
+    volumes:
+      - ./server:/app # 開発環境用
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+      - ANOTHER_ENV=${ANOTHER_ENV}
+    ports:
+      - "8000:8000"
+    restart: always
+    depends_on:
+      - db
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    
+  client:
+    build:
+      context: ./client
+    volumes:
+      - ./client:/app
+      - /app/node_modules
+    ports:
+      - "3000:3000"
+    # restart: always 
+ 
+  db:
+    image: postgres:15
+    container_name: skillnavigator-db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    ports:
+      - 5432:5432
+
+volumes:
+  postgres_data:
+  node_modules:
