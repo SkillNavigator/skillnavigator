@@ -6,3 +6,4 @@
 /.pnp
 .pnp.js
 .yarn/install-state.gz
+.next
