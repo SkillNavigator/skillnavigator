@@ -7,6 +7,7 @@ ENV POETRY_VERSION=1.7.1
 # Poetryの設定
 # POETRY_HOME 環境変数を設定して、Poetryのインストール先を /opt/poetry に指定
 # PATH 環境変数に POETRY_HOME/bin を追加して、Poetryの実行ファイルにパスを設定
+#ドッカーコンテナじょつで力を発揮　ローカルでは効かない
 ENV POETRY_HOME=/opt/poetry
 ENV PATH="$POETRY_HOME/bin:$PATH"
 
