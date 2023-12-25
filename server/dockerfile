@@ -18,6 +18,8 @@ WORKDIR /app
 # Dockerコンテナ内では仮想環境を作成しないため、poetry config virtualenvs.create false を設定
 RUN apk add --no-cache curl gcc musl-dev libffi-dev 
 RUN curl -sSL https://install.python-poetry.org | python3
+# Alembicのインストール(下記1行追記)
+# RUN poetry add alembic
 RUN poetry config virtualenvs.create false
 
 # pyproject.toml と poetry.lock をコピー

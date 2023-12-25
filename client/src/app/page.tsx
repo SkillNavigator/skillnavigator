@@ -6,6 +6,7 @@ import LearningTarget from './LearningTarget/page';
 import LearningLog from './LearningLog/page';
 import TargetLevel from './TargetLevel/page';
 import Determination from './Determination/page';
+import SettingComp from './SettingComp/page';
 
 const App: React.FC = () => {
     return (
@@ -16,7 +17,7 @@ const App: React.FC = () => {
             <TargetLevel />
             <LearningTarget />
             <Determination />
-            <button>設定を完了する</button>
+            <SettingComp />
         </div>
     );
 };
