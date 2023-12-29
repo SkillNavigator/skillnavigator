@@ -1,4 +1,59 @@
-@tailwind base;
+.square-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  /* 画面の高さいっぱいに表示 */
+}
+
+.App {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  /* 画面の高さいっぱいに表示 */
+}
+
+/* テキストのスタイル */
+.text-inside {
+  text-align: center;
+  color: #333;
+  /* テキストの色 */
+  font-size: 20px;
+  /* テキストのサイズ */
+  font-weight: bold;
+  /* ボールド（太字） */
+}
+
+.plannig {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  width: auto; /* 幅を自動に設定して、内容に基づいてサイズが決定 */
+}
+.planning-title{
+  text-align: center; /* タイトルを中央揃えにする */
+  width: 100%; /* 幅を100%にする */
+}
+.planning-table{
+  width: 60%; /* 画面の幅の80%に設定 */
+  max-width: 1000px; /* 最大幅を1000pxに設定 */
+  margin: 0 auto; /* 中央揃え */
+}
+.planning-th, .planning-td {
+  padding: 10px;
+  text-align: left;
+}
+.replanning-button {
+  display: block; /* ブロックレベル要素として設定 */
+  margin: 20px auto; /* 上下に20pxのマージン、左右は自動で中央揃え */
+  /* その他のボタンのスタイル (例: padding, font-size, border, etc.) */
+}
+/* @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
@@ -24,4 +79,4 @@ body {
       rgb(var(--background-end-rgb))
     )
     rgb(var(--background-start-rgb));
-}
+} */
