@@ -1,5 +1,5 @@
-    
-export default async function handler(req, res) {
+import { NextApiRequest, NextApiResponse } from 'next';  
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     if (req.method === 'POST') {
       try {
         const user = req.body; // ユーザー情報を取得
@@ -17,7 +17,7 @@ export default async function handler(req, res) {
         }
   
         res.status(200).json({ message: 'User created successfully' });
-      } catch (error) {
+      } catch (error:any) {
         res.status(500).json({ message: error.message });
       }
     } else {
