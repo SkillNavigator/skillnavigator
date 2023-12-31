@@ -14,7 +14,9 @@
     "jsx": "preserve",
     "incremental": true,
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "firebase/*": ["./pages/firebase.tsx"],
+      "types": ["firebase"]
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx"],

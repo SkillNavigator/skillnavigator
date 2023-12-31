@@ -29,6 +29,7 @@ const ProductTest: FC = () => {
     }
   };
   // useEffect フック:
+  // クライアントサイドのみでコードが実行されるのでハイドレーションエラーを軽減できる
   useEffect(() => {
     // Call the test function when the component mounts
     test();
