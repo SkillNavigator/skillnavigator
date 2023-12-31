@@ -8,8 +8,6 @@ import { collection, addDoc, onSnapshot, getFirestore, doc, setDoc } from 'fireb
 
 const CheckoutButton = dynamic(() => import('./CheckoutButton'), { ssr: false });
 
-
-
 // function SignUp() {
 //   return (
 //     <div>
