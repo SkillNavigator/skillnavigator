@@ -1,11 +1,12 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
-from sqlalchemy import Column, Integer,String
+from sqlalchemy import Column, Integer,String,DateTime
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-
+from datetime import datetime, timedelta
+import pytz  # pytzモジュールを使用してタイムゾーンを扱います
 
 app = FastAPI()
 
@@ -23,8 +24,9 @@ Base = declarative_base()
 class UserSetting(Base):
     __tablename__ = "User Setting"
 
-    id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(String, nullable=False)
+    user_setting_id = Column(Integer, primary_key=True, index=True)
+    uid = Column(String(50), nullable=False)                   #外部キーを入れるかどうか           
+    current_date = Column(DateTime, nullable=False)
     target_period = Column(String(10), nullable=False)         #あなたのコース：短期3か月
     learning_history = Column(String(30), nullable=False)      #プログラミング歴：未経験
     target_level = Column(String(30), nullable=False)          #目標レベル：Must課題までをマスター
@@ -61,6 +63,7 @@ learning_history_2 = []
 target_level_3 = []
 study_time_4 = []
 determination_5 = []
+day = []
 
 
 @app.post("/api/course_select_1")
@@ -102,8 +105,14 @@ async def save_text(determination_input:DeterminationInput):
 #配列データをDBに挿入するエンドポイント
 @app.post("/api/setting_complete")
 async def setting_complete():
+# 日本のタイムゾーンを取得
+    japan_timezone = pytz.timezone('Asia/Tokyo')
     insert_array = []
-    insert_array.append("user_id")
+    insert_array.append("uid")
+    today_date = datetime.now(japan_timezone)
+    print(today_date)
+    # `today_date`を文字列に変換して格納
+    insert_array.append(today_date.strftime("%Y-%m-%d %H:%M:%S"))
     insert_array.append(course_select_1[-1])
     insert_array.append(learning_history_2[-1])
     insert_array.append(target_level_3[-1])
@@ -115,24 +124,25 @@ async def setting_complete():
     insert_array.append(study_time_4[-1][5]) #土
     insert_array.append(study_time_4[-1][6]) #日
     insert_array.append(determination_5[-1])
-    print(course_select_1,learning_history_2,target_level_3,study_time_4,determination_5)
+    #print(course_select_1,learning_history_2,target_level_3,study_time_4,determination_5)
     print(insert_array)
 
     user_setting_data = {
-        "user_id"             : insert_array[0],
-        "target_period"       : insert_array[1],
-        "learning_history"    : insert_array[2],   #プログラミング歴：未経験
-        "target_level"        : insert_array[3],   #目標レベル：Must課題までをマスター
-        "monday_study_time"   : insert_array[4],   #月曜日の学習時間：1
-        "tuesday_study_time"  : insert_array[5],   #火曜日の学習時間：2
-        "wednesday_study_time": insert_array[6],   #水曜日の学習時間：3
-        "thursday_study_time" : insert_array[7],   #木曜日の学習時間：2
-        "friday_study_time"   : insert_array[8],   #金曜日の学習時間：1
-        "saturday_study_time" : insert_array[9],   #土曜日の学習時間：5
-        "sunday_study_time"   : insert_array[10],  #日曜日の学習時間：5
-        "motivation_statement": insert_array[11],  #意気込み：頑張ります
+        "uid"                 : insert_array[0],
+        "current_date"        : insert_array[1],
+        "target_period"       : insert_array[2],
+        "learning_history"    : insert_array[3],   #プログラミング歴：未経験
+        "target_level"        : insert_array[4],   #目標レベル：Must課題までをマスター
+        "monday_study_time"   : insert_array[5],   #月曜日の学習時間：1
+        "tuesday_study_time"  : insert_array[6],   #火曜日の学習時間：2
+        "wednesday_study_time": insert_array[7],   #水曜日の学習時間：3
+        "thursday_study_time" : insert_array[8],   #木曜日の学習時間：2
+        "friday_study_time"   : insert_array[9],   #金曜日の学習時間：1
+        "saturday_study_time" : insert_array[10],   #土曜日の学習時間：5
+        "sunday_study_time"   : insert_array[11],  #日曜日の学習時間：5
+        "motivation_statement": insert_array[12],  #意気込み：頑張ります
     }
-
+    print(user_setting_data)
     db = SessionLocal()
     try:
         user_setting = UserSetting(**user_setting_data)

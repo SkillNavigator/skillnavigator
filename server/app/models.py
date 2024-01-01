@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer,String
+from sqlalchemy import Column, Integer,String,DateTime
 from sqlalchemy.ext.declarative import declarative_base
 
 Base = declarative_base()
@@ -7,8 +7,9 @@ Base = declarative_base()
 class UserSetting(Base):
     __tablename__ = "User Setting"
 
-    id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(String, nullable=False)
+    user_setting_id = Column(Integer, primary_key=True, index=True)
+    uid = Column(String(50), nullable=False)                   #外部キー
+    current_date = Column(DateTime, nullable=False)
     target_period = Column(String(10), nullable=False)         #あなたのコース：短期3か月
     learning_history = Column(String(30), nullable=False)      #プログラミング歴：未経験
     target_level = Column(String(30), nullable=False)          #目標レベル：Must課題までをマスター
