@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 const Schedules = () => {
   const [schedules, setSchedules] = useState([]);
@@ -10,6 +10,7 @@ const Schedules = () => {
       const courseData = await courseResponse.json();
       
       // llm_answers のデータを取得
+      // const userSettingId = useContext(UserContext).id; // これは例。実際のコンテキストやステート管理方法に応じて調整必須
       const userSettingId = "1"; // 実際のユーザー設定IDに置き換えてください
       const llmResponse = await fetch(`http://localhost:8000/user-settings/${userSettingId}/llm-answers`);;
       const llmData = await llmResponse.json();
@@ -23,13 +24,14 @@ const Schedules = () => {
           date: llm.date // この形式は仮定しています。実際のデータに合わせて調整してください。
         };
       });
-
       setSchedules(mappedSchedules);
     } catch (error) {
       console.error('Error fetching data:', error);
     }
   };
-
+  useEffect(() => {
+    fetchLLMPlans(); // コンポーネントがマウントされたらデータを取得
+  }, []); // 空の依存配列を渡して初回のみ実行
   return (
     <div>
       <span className="text-inside">
