@@ -22,15 +22,19 @@ function SignUpButton() {
                 // 認証成功時にユーザー情報を取得
                 const user = result.user;
                 console.log('認証されたユーザー:', user);
-    
-                await fetch('/api/user', {
+                console.log('データの中身:', JSON.stringify({
+                    uid: user.uid,
+                    user_name: user.displayName,
+                }),);
+
+                await fetch('http://localhost:8000/create_user', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify({
                         uid: user.uid,
-                        name: user.displayName,
+                        user_name: user.displayName,
                     }),
                 });
 

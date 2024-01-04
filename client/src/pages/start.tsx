@@ -1,6 +1,6 @@
 import React from 'react';
-import LoginWithGoogle from './LoginWithGoogle';
-import SignUp from './SignUp';
+import LoginWithGoogle from './Components/LoginWithGoogle';
+import SignUp from './Components/SignUp';
 
 function Start() {
     return (
