@@ -1,6 +1,7 @@
 import { initializeApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider } from "firebase/auth";
 import { getFirestore } from 'firebase/firestore';
+import firebase from 'firebase/compat/app'; 
 
 const firebaseConfig = {
   apiKey:"AIzaSyBlXiF-FbZxVuxXu_9YeQIawAKERWO04vk",
@@ -22,5 +23,7 @@ const auth = getAuth(app);
 const provider = new GoogleAuthProvider();
 //NOTE:GoogleAuthProviderポップアップでログインページが出てくる
 const firestore = getFirestore(app);
-export { auth, provider,firestore};
+
+// NOTE: 'firebase/auth' モジュールから FirebaseError をエクスポート
+export { auth, provider, firestore, firebase as default };
 

@@ -1,5 +1,14 @@
 {
   "compilerOptions": {
+    "baseUrl": "./", // 
+    "paths": {
+      "@/*": ["./src/*"],
+      "firebase/*": ["./pages/firebase.tsx"],
+      "types/*": ["firebase","tailwindcss","@firebase/util"],
+     
+      "@/styles/*": ["src/styles/*"]
+      
+    },
     "target": "es5",
     "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
@@ -13,12 +22,9 @@
     "isolatedModules": true,
     "jsx": "preserve",
     "incremental": true,
-    "paths": {
-      "@/*": ["./src/*"],
-      "firebase/*": ["./pages/firebase.tsx"],
-      "types": ["firebase"]
-    }
+    
   },
+ 
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx"],
   "exclude": ["node_modules"]
 }

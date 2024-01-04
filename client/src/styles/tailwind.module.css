@@ -1,0 +1,9 @@
+/* tailwind.module.css */
+
+
+  .button {
+  @apply bg-gray-300 hover:bg-gray-300 text-black rounded px-5 py-4 border-2 my-4
+  }
+/* 
+  中央揃えにするにはマージンで設定すれば良いか？
+  m */

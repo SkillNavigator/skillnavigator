@@ -21,5 +21,6 @@ COPY . .
 # RUN npm run build
 
 # アプリケーションの起動
-CMD ["npm", "run", "dev"] 
+CMD sh -c "npm run dev > log.txt
+
 #devで本番環境デプロイOK
