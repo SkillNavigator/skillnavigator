@@ -22,7 +22,7 @@ function LogInButton() {
     };
         return (
              <button onClick={signInWithGoogle}>
-                <p>Googleログイン</p>
+                <p>Googleでログイン</p>
             </button>
             );
         };
