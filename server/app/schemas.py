@@ -27,15 +27,6 @@ class UserSetting(BaseModel):
     class Config:
         orm_mode = True
 
-#不安
-# class LLMAnswer(BaseModel):
-#     llm_answer_id: int
-#     user_setting_id: int
-#     course_level: str  # コースのレベル
-#     date: str  # 日付（YYYY-MM-DD形式）
-#     class Config:
-#         orm_mode = True
-
 #llmの返答の形を固定(PlaniItem,StudyPlanRespone)
 
 class PlanItem(BaseModel):

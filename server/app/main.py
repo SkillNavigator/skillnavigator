@@ -1,7 +1,7 @@
-#ブラウザでクリックしたらその流れで立案、立案内容保存もされブラウザにも表示させたい
+ #ブラウザでクリックしたらその流れで立案、立案内容をそのままブラウザに表示
 import uvicorn
 from fastapi import FastAPI, Depends, HTTPException, Request
-from .models import LLMAnswer, UserSetting, CourseDetail, User, Base
+from .models import LLMAnswer, UserSetting, CourseDetail, User, Base,CompletedRecord, Record
 from dotenv import load_dotenv
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -10,8 +10,8 @@ from langchain.prompts import PromptTemplate
 from typing import Dict, List
 import openai
 import os
-from datetime import date 
 import datetime
+from datetime import date, datetime as dt , timedelta
 from . import crud, schemas, models
 from langchain.chat_models import ChatOpenAI
 from langchain.chains import LLMChain # LLM チェーンをインポート
@@ -20,7 +20,11 @@ from sqlalchemy.orm import sessionmaker
 # from .database import SessionLocal, engine
 from sqlalchemy import create_engine
 import logging
-
+import pytz  # pytzモジュールを使用してタイムゾーンを扱います
+# from sqlalchemy.ext.declarative import declarative_base
+# from sqlalchemy import Column, Integer, String, Date, ForeignKey, Table, Float 
+# from sqlalchemy import DateTime
+# from sqlalchemy.orm import relationship, backref
 # ロギングの設定
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -32,8 +36,8 @@ DATABASE_URL = os.environ.get("DATABASE_URL")
 print("DATABASE_URL:", DATABASE_URL) 
 # SQLAlchemyエンジンを作成
 engine = create_engine(DATABASE_URL)
-# データベーステーブルを作成
-# Base.metadata.create_all(bind=engine)
+#データベーステーブルを作成
+Base.metadata.create_all(bind=engine)
 # セッションファクトリーを作成
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 # 環境変数を読み込む
@@ -45,20 +49,179 @@ llm = OpenAI(model_name="text-davinci-003" , temperature=0.2)
 # 今日の日付を取得
 current_date = datetime.date.today().isoformat()  # YYYY-MM-DD形式
 
-# # CORSミドルウェアの設定
-# origins = [
-#     "http://localhost:3000",  # Next.jsが動作しているURL（開発時は通常このURL）
-#     # "https://your-deployment.frontend.com", # 本番のフロントエンドURL
-# ]
 
 # CORSミドルウェアを追加・異なるオリジンからのリクエストを許可
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # ここで許可するオリジンを指定
+    allow_origins=["*"],  # ここで許可するオリジンを指定  指定する場合"http://localhost:3000"
     allow_credentials=True,
     allow_methods=["*"],  # ここで許可するHTTPメソッドを指定
     allow_headers=["*"],  # ここで許可するHTTPヘッダーを指定
 )
+
+
+# db = SessionLocal() #セッションの作成
+# #DBにコンテンツを登録する
+# new_sample_schedule = [
+#     CourseDetail(course_level='level0-1 イントロダクション・基礎学習について',duration=1),
+#     CourseDetail(course_level='level1-1 環境構築',duration=0.5),
+#     CourseDetail(course_level='level1-2 データ型・演算子・変数',duration=2.5),
+#     CourseDetail(course_level='level2-1 関数',duration=5),
+#     CourseDetail(course_level='level2-2 より良いコードを書くには？',duration=2),
+#     CourseDetail(course_level='level2-3 比較',duration=2),
+#     CourseDetail(course_level='level3-1 条件分岐①',duration=4),
+#     CourseDetail(course_level='level3-2 条件分岐②・演算子・変数',duration=4),
+#     CourseDetail(course_level='level3-3 スコープ',duration=2),
+#     CourseDetail(course_level='level4-1 配列',duration=6),
+#     CourseDetail(course_level='level4-2 オブジェクト',duration=6),
+#     CourseDetail(course_level='level4-3 forループ',duration=10),
+#     CourseDetail(course_level='level5-1 HTML・CSSの基礎知識',duration=1),
+#     CourseDetail(course_level='level5-2 HTML・CSS演習（My IRページ）',duration=14)
+# ]
+# print("new_sample_schedule:",new_sample_schedule)
+# # セッションに追加
+# db.add_all(new_sample_schedule)
+# # トランザクションの確定
+# db.commit()
+# # セッションのクローズ
+# db.close()
+
+# Base = declarative_base()
+
+# #SQLAlchemyモデルとしての表現を持つFastAPIモデル
+# class UserSetting(Base):
+#     __tablename__ = "user_setting"
+
+#     user_setting_id = Column(Integer, primary_key=True, index=True)
+#     uid = Column(String(50), ForeignKey('users.uid')) #firebase等で使用するid 外部キー
+#     current_date = Column(DateTime, nullable=False)            #ユーザーが入力した日付と時間
+#     target_period = Column(String(10), nullable=False)         #あなたのコース：短期3か月
+#     learning_history = Column(String(30), nullable=False)      #プログラミング歴：未経験
+#     target_level = Column(String(30), nullable=False)          #目標レベル：Must課題までをマスター
+#     monday_study_time = Column(Integer, nullable=False)     #月曜日の学習時間：1
+#     tuesday_study_time = Column(Integer, nullable=False)    #火曜日の学習時間：2
+#     wednesday_study_time = Column(Integer, nullable=False)  #水曜日の学習時間：3
+#     thursday_study_time = Column(Integer, nullable=False)   #木曜日の学習時間：2
+#     friday_study_time = Column(Integer, nullable=False)     #金曜日の学習時間：1
+#     saturday_study_time = Column(Integer, nullable=False)   #土曜日の学習時間：5
+#     sunday_study_time = Column(Integer, nullable=False)     #日曜日の学習時間：5
+#     motivation_statement = Column(String(255), nullable=False)  #意気込み：頑張ります
+#     llm_answers = relationship("LLMAnswer", back_populates="user_setting")
+#     uid_user = relationship("User", back_populates="user_setting")
+
+
+
+# Pydanticモデルの定義（POSTリクエストのボディから受け取るデータ構造を定義する）
+class Course(BaseModel):
+    selectedCourse: str
+
+class DeterminationInput(BaseModel):
+    determinationText: str
+
+# Pydanticモデルの定義（POSTリクエストのボディから受け取るデータ構造を定義する）
+class StudyTime(BaseModel):
+    studyTime: list[int]
+
+#reloadされると配列の中身が空に
+course_select_1 = []
+learning_history_2 = []
+target_level_3 = []
+study_time_4 = []
+determination_5 = []
+day = []
+
+@app.post("/api/course_select_1")
+#ボディにはCourseモデルが使用され、同じデータがJSON形式でレスポンスとして返される
+async def save_data(course:Course):
+    course_select_1.append(course.selectedCourse)
+    print(course_select_1)
+    return course.selectedCourse
+
+@app.post("/api/learning_history_2")
+#ボディにはCourseモデルが使用され、同じデータがJSON形式でレスポンスとして返される
+async def save_data(course:Course):
+    learning_history_2.append(course.selectedCourse)
+    print(learning_history_2)
+    return course.selectedCourse
+
+@app.post("/api/target_level_3")
+#ボディにはCourseモデルが使用され、同じデータがJSON形式でレスポンスとして返される
+async def save_data(course:Course):
+    target_level_3.append(course.selectedCourse)
+    print(target_level_3)
+    return course.selectedCourse
+
+# 学習時間データを保存するエンドポイント
+@app.post("/api/study_time_4")
+async def save_study_time(study_time: StudyTime):
+    saved_data = {"message": "Study time data received and saved", "data": study_time.studyTime}
+    # return saved_data
+    study_time_4.append(study_time.studyTime)
+    print(study_time_4)
+    return study_time.studyTime
+
+@app.post("/api/determination_5")
+async def save_text(determination_input:DeterminationInput):
+    determination_5.append(determination_input.determinationText)
+    print(determination_5)
+    return determination_input.determinationText
+
+#配列データをDBに挿入するエンドポイント
+@app.post("/api/setting_complete")
+async def setting_complete():
+# 日本のタイムゾーンを取得
+    japan_timezone = pytz.timezone('Asia/Tokyo')
+    insert_array = []
+    insert_array.append("test-UID1234")
+    today_date = dt.now(japan_timezone)
+    print(today_date)
+    # `today_date`を文字列に変換して格納
+    insert_array.append(today_date.strftime("%Y-%m-%d %H:%M:%S"))
+    insert_array.append(course_select_1[-1])
+    insert_array.append(learning_history_2[-1])
+    insert_array.append(target_level_3[-1])
+    insert_array.append(study_time_4[-1][0]) #月
+    insert_array.append(study_time_4[-1][1]) #火
+    insert_array.append(study_time_4[-1][2]) #水
+    insert_array.append(study_time_4[-1][3]) #木
+    insert_array.append(study_time_4[-1][4]) #金
+    insert_array.append(study_time_4[-1][5]) #土
+    insert_array.append(study_time_4[-1][6]) #日
+    insert_array.append(determination_5[-1])
+    #print(course_select_1,learning_history_2,target_level_3,study_time_4,determination_5)
+    print(insert_array)
+
+    user_setting_data = {
+        "uid"                 : insert_array[0],
+        "current_date"        : insert_array[1],
+        "target_period"       : insert_array[2],
+        "learning_history"    : insert_array[3],   #プログラミング歴：未経験
+        "target_level"        : insert_array[4],   #目標レベル：Must課題までをマスター
+        "monday_study_time"   : insert_array[5],   #月曜日の学習時間：1
+        "tuesday_study_time"  : insert_array[6],   #火曜日の学習時間：2
+        "wednesday_study_time": insert_array[7],   #水曜日の学習時間：3
+        "thursday_study_time" : insert_array[8],   #木曜日の学習時間：2
+        "friday_study_time"   : insert_array[9],   #金曜日の学習時間：1
+        "saturday_study_time" : insert_array[10],   #土曜日の学習時間：5
+        "sunday_study_time"   : insert_array[11],  #日曜日の学習時間：5
+        "motivation_statement": insert_array[12],  #意気込み：頑張ります
+    }
+    print("user_setting_data:",user_setting_data)
+    db = SessionLocal()
+    try:
+        user_setting = UserSetting(**user_setting_data)
+        print("aaaaaaaaa")
+        db.add(user_setting)
+        print("bbbbbbbbb")
+        db.commit()
+        print("cccccccccomit")
+        db.refresh(user_setting)
+        print("refreshhhhhhh")
+        return {"message": "Setting completed successfully", "user_setting": user_setting}
+    except Exception as e:
+        print(f"An error occurred during commit: {e}")
+    finally:
+        db.close()
 
 # データベースセッションの取得
 def get_db():
@@ -110,7 +273,7 @@ async def create_llm_plan(request: Request, db: Session = Depends(get_db)):
         request_data = await request.json()
 
         # ユーザー設定とコース情報を取得
-        user_setting_id = 1 #request_data['user_setting_id']
+        user_setting_id = 9 #request_data['user_setting_id']
         user_setting = crud.get_user_setting(db, user_setting_id) 
         if not user_setting:
             raise HTTPException(status_code=404, detail="User setting not found")
@@ -174,45 +337,20 @@ async def create_llm_plan(request: Request, db: Session = Depends(get_db)):
         # 取得した予測結果を処理してレスポンスモデルに合う形に整形する
         plan_items = parse_llm_response(prediction.strip())
         print("plan_items:",plan_items)
-        for plan_item in plan_items:
-            # plan_itemのcourse_levelに基づいてcourse_details_idを取得
-            course_details_id = course_level_to_id.get(plan_item.course_level)
-            
-            # course_details_idが見つからない場合のエラー処理（必要に応じて）
-            if course_details_id is None:
-                raise HTTPException(status_code=404, detail=f"Course detail not found for {plan_item.course_level}")
+        llm_answer = schemas.LLMAnswer(plan=plan_items)  # PlanItemリストをLLMAnswerのplanに割り当てる
+        return llm_answer  # これを返却する
 
-            new_llm_answer = models.LLMAnswer(
-                date=datetime.strptime(plan_item.date, "%Y年%m月%d日").date(),
-                user_setting_id=user_setting_id,
-                course_details_id=course_details_id  # ここで適切なcourse_detail_idを設定
-            )
-            db.add(new_llm_answer)
-
-        db.commit()
-
-        # 保存したLLMAnswerのリストをクライアントに返す
-        saved_llm_answers = db.query(models.LLMAnswer).filter(models.LLMAnswer.user_setting_id == user_setting_id).all()
-        print("saved_llm_answers",saved_llm_answers)
-        return saved_llm_answers
-
-        
     except Exception as e:
         # # トランザクションが失敗した場合はロールバック
         # db.rollback()
         logger.error(f"Error in llm-plan: {e}")
         print("Error creating LLM Answer:", e) # エラーログ
-        raise HTTPException(status_code=500, detail=str(e))        
+        raise HTTPException(status_code=500, detail=str(e))    
+
+  
 
 
-@app.get("/get-schedule/{user_setting_id}")
-def get_schedule(user_id: int, db: Session = Depends(get_db)):
-    schedule = db.query(models.Schedule).filter(models.Schedule.user_id == user_id).first()
-    if schedule is None:
-        return {"detail": "No schedule available"}
-    return schedule.plan  # スケジュールのデータを返す
-
-
+# # みさ作成　LLM
 
 #  #ブラウザでクリックしたらその流れで立案、立案内容をそのままブラウザに表示
 # import uvicorn
