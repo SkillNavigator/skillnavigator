@@ -3,10 +3,11 @@ import React, { useState, useEffect } from 'react';
 const GetPlan  = () => {
   const [schedules, setSchedules] = useState([]);
 
+
   const handlePlanClick = async () => {
   try {
     // 1. ユーザー設定情報を取得
-    const userSettingId = 9; // 仮　実際はユーザー認証システムからこのIDを取得し、それを用いてサーバーからユーザー設定を取得
+    const userSettingId = 13;
     const userSettingResponse = await fetch(`http://localhost:8000/user-settings/${userSettingId}`);
     const userSettingData = await userSettingResponse.json();
 
@@ -45,9 +46,9 @@ const GetPlan  = () => {
   }
 };
 
-  useEffect(() => {
-    handlePlanClick(); // コンポーネントがマウントされたらデータを取得
-  }, []); // 空の依存配列を渡して初回のみ実行
+  // useEffect(() => {
+  //   handlePlanClick(); // コンポーネントがマウントされたらデータを取得
+  // }, []); // 空の依存配列を渡して初回のみ実行
   return (
     <div>
       <span className="text-inside">
@@ -75,5 +76,3 @@ const GetPlan  = () => {
 };
 
 export default GetPlan ;
-
-

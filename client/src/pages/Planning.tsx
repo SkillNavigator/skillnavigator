@@ -2,7 +2,7 @@
 // import React from 'react';
 // import GetPlan from './components/getPlan';
 
-// const App: React.FC = () => {
+// const Planning: React.FC = () => {
 //   return (
 //     <div>
 //       <h1>Learning Schedule</h1>
@@ -11,7 +11,7 @@
 //   );
 // };
 
-// export default App;
+// export default Planning;
 
 //インデくすからページ遷移？
 // import React from 'react';

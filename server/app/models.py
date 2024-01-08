@@ -32,7 +32,7 @@ class CourseDetail(Base):
     course_details_id = Column(Integer, primary_key=True, index=True)
     course_level = Column(String(255), unique=True, nullable=False)  # レベルは一意の値
     duration = Column(Float, nullable=False)  # 所要時間
-    llm_answers = relationship("LLMAnswer", back_populates="course_details")
+    # llm_answers = relationship("LLMAnswer", back_populates="course_details")
 
 # #コンテンツの登録と参考スケジュール
 # class SampleSchedule(Base):
@@ -47,11 +47,12 @@ class LLMAnswer(Base):
     __tablename__ = "llm_answers"
 
     llm_answers_id = Column(Integer, primary_key=True, index=True)
+    course_level = Column(String(255), nullable=False)
     date = Column(Date, nullable=False)
     user_setting_id = Column(Integer, ForeignKey('user_setting.user_setting_id')) 
     user_setting = relationship("UserSetting", back_populates="llm_answers")
-    course_details_id = Column(Integer, ForeignKey('course_details.course_details_id'))  # 正しい外部キーの設定
-    course_details = relationship("CourseDetail", back_populates="llm_answers")
+    # course_details_id = Column(Integer, ForeignKey('course_details.course_details_id'))  # 正しい外部キーの設定
+    # course_details = relationship("CourseDetail", back_populates="llm_answers")
 
 class User(Base):
     __tablename__ = "users"

@@ -212,10 +212,10 @@ def get_db():
 @app.get("/user-settings/{user_setting_id}")  # パスパラメータの設定
 def read_user_setting(user_setting_id: int, db: Session = Depends(get_db)):  # 依存関係としてデータベースセッションを注入
     user_setting = crud.get_user_setting(db, user_setting_id=user_setting_id)
+    print("user_setting_idddddddd:",user_setting_id)
     if not user_setting:
         raise HTTPException(status_code=404, detail="User setting not found")
     return user_setting
-
 
 
 @app.get("/course-details", response_model=List[schemas.CourseDetail])
@@ -233,9 +233,19 @@ def parse_llm_response(llm_response: str) -> List[schemas.PlanItem]:
         if line.startswith("レベル"):
             # print(line.startswith("レベル"))
             parts = line.split(": ")
+            print("Parts after splitting:", parts)
             course_level = parts[0].strip()  # "レベルX" の "X" 部分
-            date = parts[1].strip()  # "YYYY-MM-DD" の部分
-            plan_items.append(schemas.PlanItem(course_level=course_level, date=date))
+            date_str = parts[1].strip()  # "YYYY-MM-DD" 形式の日付文字列
+            # date = parts[1].strip()  # "YYYY-MM-DD" の部分
+
+            # " 1時間"を取り除いて日付部分だけを抽出
+            date_str = date_str.split(' ')[0]  # 空白で分割して最初の部分（日付）を取得
+            # 日付の文字列を datetime オブジェクトに変換
+            date_obj = dt.strptime(date_str, "%Y-%m-%d")
+            # datetime オブジェクトを YYYY-MM-DD 形式の文字列に再フォーマット
+            formatted_date = date_obj.strftime("%Y-%m-%d")
+
+            plan_items.append(schemas.PlanItem(course_level=course_level, date=formatted_date))
     print("plan_items",plan_items)
     return plan_items
    
@@ -249,10 +259,17 @@ async def create_llm_plan(request: Request, db: Session = Depends(get_db)):
         request_data = await request.json()
 
         # ユーザー設定とコース情報を取得
-        user_setting_id = 9 #request_data['user_setting_id']
-        user_setting = crud.get_user_setting(db, user_setting_id) 
+        request_data = await request.json()
+        user_setting_id = request_data.get('user_setting_id')  # リクエストからuser_setting_idを取得
+        if not user_setting_id:
+            raise HTTPException(status_code=400, detail="User setting ID is required")
+        # ユーザー設定をデータベースから取得する
+        user_setting = crud.get_user_setting(db, user_setting_id)
         if not user_setting:
             raise HTTPException(status_code=404, detail="User setting not found")
+        print("user_setting:",user_setting)
+        print("Tuesday study time:", user_setting.tuesday_study_time)
+        print("target_period:", user_setting.target_period)
         # CourseDetailからデータを取得
         course_details = crud.get_course_details(db)
         # コースレベルとIDのマッピングを作成
@@ -283,48 +300,96 @@ async def create_llm_plan(request: Request, db: Session = Depends(get_db)):
             "saturday_study_time": user_setting.saturday_study_time,
             "sunday_study_time": user_setting.sunday_study_time,
             "target_period": user_setting.target_period,
+            "learning_history":user_setting.learning_history,
             "course_detail": course_details_dicts
         }
         
         prompt = PromptTemplate(
-            input_variables=["current_date","monday_study_time","tuesday_study_time","wednesday_study_time","thursday_study_time","friday_study_time","saturday_study_time","sunday_study_time","target_period","course_detail"],
+            input_variables=["current_date","monday_study_time","tuesday_study_time","wednesday_study_time","thursday_study_time","friday_study_time","saturday_study_time","sunday_study_time","target_period","learning_history","course_detail"],
             template="""
-            今日は{current_date}です。私は、特定のユーザーのために{target_period}のコース期間内にlevel5-2までを完了する個別化された学習スケジュールを作成しています。
-            各レベルのコース内容と所要時間は{course_detail}で、ユーザーの勉強可能時間は{monday_study_time},{tuesday_study_time},{wednesday_study_time},{thursday_study_time},{friday_study_time},{saturday_study_time},{sunday_study_time}です。
-            私のタスクは、これらの情報を基にして、各コースレベルが特定の日付に割り当てられるようなスケジュールを立案することです。スケジュールは、具体的な日付と、その日に行うべきレベルを示す形式であるべきです。各レベルの勉強が終わるごとに次のレベルに進み、計画は最終レベルまで網羅されている必要があり、各レベルに対して実際に勉強する日程は複数ある場合があります。
+            あなたは目的を達成するための計画を立案する才能に長けています。
+            今回の依頼は、{learning_history}の学習経験を持ち、プログラミングの勉強を始めた人が{target_period}内にlevel5-2までのコースを完了することを目指しています。各コースレベルの平均所要時間は{course_detail}です。
 
-            以下のようにスケジュールを提示してください：
+            ユーザーの1週間の勉強可能時間は以下の通りです。この時間を基に計画を立て、無駄なく効率的にコースを進められるようにしてください。
+            - 月曜日: {monday_study_time}時間
+            - 火曜日: {tuesday_study_time}時間
+            - 水曜日: {wednesday_study_time}時間
+            - 木曜日: {thursday_study_time}時間
+            - 金曜日: {friday_study_time}時間
+            - 土曜日: {saturday_study_time}時間
+            - 日曜日: {sunday_study_time}時間
 
+            各コースレベルが特定の日付に割り当てられる学習スケジュールを立案してください。計画は{current_date}の次の日から開始し、level5-2を含む全てのレベルが完了するまでの日程を示してください。計画中、ユーザーの勉強可能時間を超えないよう注意してください。また、各レベルの終了後には、予定に遅れた場合に備えてバッファータイムを設けてください。それぞれのレベルの所要時間を考慮し、スケジュールに反映させてください。
+
+            スケジュールは以下のフォーマットで提示してください：
             レベル0: [日付]
             レベル1-1: [日付]
             レベル1-2: [日付]
             ... 以下、各レベルに対応する日付 ...
 
-            各レベルの所要時間とユーザーの利用可能時間を考慮し、実際に勉強が行われる日を割り当ててください。計画のスタート日は現在の日付の次の日からにしてください。
-            全てのレベルが完了するまでのスケジュールを提案してください。
-            また、level1-2,level2-3,level3-3,level4-3の終了後には、ユーザーが予定に遅れた場合に備えてバッファーとして各2時間を各レベルの後に秘匿的に組み込んでください。
+            各レベルの勉強時間をユーザーの勉強可能時間に合わせて調整し、最も効率的で実現可能な計画を提案してください。特に、勉強可能時間が0の日は計画を立てないようにしてください。計画はユーザーの目標、勉強可能時間、コース内容を考慮して最適化されるべきです。
             """
         )
-        
+        #level1-2, level2-3, level3-3, level4-3の終了後には、予定に遅れた場合に備えてバッファータイムを設けてください。
         # LLM チェーンを作成（LLM ラッパーとプロンプトテンプレートから構成する）
         chain = LLMChain(llm=llm, prompt=prompt)
         # LLM　チェーンを実行
         prediction = chain.run(input_data)
+        print("Prediction:", prediction)
         # 取得した予測結果を処理してレスポンスモデルに合う形に整形する
         plan_items = parse_llm_response(prediction.strip())
-        print("plan_items:",plan_items)
-        llm_answer = schemas.LLMAnswer(plan=plan_items)  # PlanItemリストをLLMAnswerのplanに割り当てる
-        return llm_answer  # これを返却する
+                # 計画内容をデータベースに保存
+        for item in plan_items:
+            new_llm_answer = LLMAnswer(
+                course_level=item.course_level,
+                date=dt.strptime(item.date, "%Y-%m-%d").date(),
+                user_setting_id=user_setting_id  # 仮定: user_setting_idはユーザー設定ID
+            )
+            print("new_llm_answer:",new_llm_answer)
+            db.add(new_llm_answer)
+        
+        db.commit()  # トランザクションのコミット
+
+        # 保存した計画内容をフロントエンドに返す
+        saved_plan = db.query(LLMAnswer).filter(LLMAnswer.user_setting_id == user_setting_id).all()
+        print("save_plan:",save_plan)
+        saved_llm_plans = schemas.LLMAnswer(plan=saved_plan) 
+        print("saved_llm_plans:",saved_llm_plans)
+        return saved_llm_plan
 
     except Exception as e:
-        # # トランザクションが失敗した場合はロールバック
-        # db.rollback()
-        logger.error(f"Error in llm-plan: {e}")
-        print("Error creating LLM Answer:", e) # エラーログ
-        raise HTTPException(status_code=500, detail=str(e))    
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
 
-  
-#全部繋がってる
+        # llm_answer = schemas.LLMAnswer(plan=plan_items)  # PlanItemリストをLLMAnswerのplanに割り当てる
+        # return llm_answer  # これを返却する
+
+    # except Exception as e:
+    #     # # トランザクションが失敗した場合はロールバック
+    #     # db.rollback()
+    #     logger.error(f"Error in llm-plan: {e}")
+    #     print("Error creating LLM Answer:", e) # エラーログ
+    #     raise HTTPException(status_code=500, detail=str(e))    
+
+
+# # LLM計画を保存するためのエンドポイント
+# @app.post("/save-llm-plan/")
+# async def save_llm_plan(plan: LLMAnswer, db: Session = Depends(get_db)):
+#     try:
+#         # 各計画項目をデータベースに挿入
+#         for item in plan.plan:
+#             new_plan = LLMAnswer(date=item.date, user_setting_id=plan.user_setting_id)  # LLMAnswerモデルを使用
+#             db.add(new_plan)
+#         db.commit()  # トランザクションをコミット
+#     except Exception as e:
+#         db.rollback()  # エラーが発生したらロールバック
+#         raise HTTPException(status_code=500, detail=str(e))
+#     finally:
+#         db.close()  # セッションを閉じる
+
+#     return {"status": "success", "message": "Plan saved successfully"}
+
+#最新版
 # import uvicorn
 # from fastapi import FastAPI, Depends, HTTPException, Request
 # from .models import LLMAnswer, UserSetting, CourseDetail, User, Base,CompletedRecord, Record
@@ -347,10 +412,10 @@ async def create_llm_plan(request: Request, db: Session = Depends(get_db)):
 # from sqlalchemy import create_engine
 # import logging
 # import pytz  # pytzモジュールを使用してタイムゾーンを扱います
-# # from sqlalchemy.ext.declarative import declarative_base
-# # from sqlalchemy import Column, Integer, String, Date, ForeignKey, Table, Float 
-# # from sqlalchemy import DateTime
-# # from sqlalchemy.orm import relationship, backref
+# import psycopg2
+
+# logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+
 # # ロギングの設定
 # logging.basicConfig(level=logging.INFO)
 # logger = logging.getLogger(__name__)
@@ -385,57 +450,33 @@ async def create_llm_plan(request: Request, db: Session = Depends(get_db)):
 #     allow_headers=["*"],  # ここで許可するHTTPヘッダーを指定
 # )
 
+# class User(BaseModel):
+#     uid: str
+#     user_name: str
 
-# # db = SessionLocal() #セッションの作成
-# # #DBにコンテンツを登録する
-# # new_sample_schedule = [
-# #     CourseDetail(course_level='level0-1 イントロダクション・基礎学習について',duration=1),
-# #     CourseDetail(course_level='level1-1 環境構築',duration=0.5),
-# #     CourseDetail(course_level='level1-2 データ型・演算子・変数',duration=2.5),
-# #     CourseDetail(course_level='level2-1 関数',duration=5),
-# #     CourseDetail(course_level='level2-2 より良いコードを書くには？',duration=2),
-# #     CourseDetail(course_level='level2-3 比較',duration=2),
-# #     CourseDetail(course_level='level3-1 条件分岐①',duration=4),
-# #     CourseDetail(course_level='level3-2 条件分岐②・演算子・変数',duration=4),
-# #     CourseDetail(course_level='level3-3 スコープ',duration=2),
-# #     CourseDetail(course_level='level4-1 配列',duration=6),
-# #     CourseDetail(course_level='level4-2 オブジェクト',duration=6),
-# #     CourseDetail(course_level='level4-3 forループ',duration=10),
-# #     CourseDetail(course_level='level5-1 HTML・CSSの基礎知識',duration=1),
-# #     CourseDetail(course_level='level5-2 HTML・CSS演習（My IRページ）',duration=14)
-# # ]
-# # print("new_sample_schedule:",new_sample_schedule)
-# # # セッションに追加
-# # db.add_all(new_sample_schedule)
-# # # トランザクションの確定
-# # db.commit()
-# # # セッションのクローズ
-# # db.close()
-
-# # Base = declarative_base()
-
-# # #SQLAlchemyモデルとしての表現を持つFastAPIモデル
-# # class UserSetting(Base):
-# #     __tablename__ = "user_setting"
-
-# #     user_setting_id = Column(Integer, primary_key=True, index=True)
-# #     uid = Column(String(50), ForeignKey('users.uid')) #firebase等で使用するid 外部キー
-# #     current_date = Column(DateTime, nullable=False)            #ユーザーが入力した日付と時間
-# #     target_period = Column(String(10), nullable=False)         #あなたのコース：短期3か月
-# #     learning_history = Column(String(30), nullable=False)      #プログラミング歴：未経験
-# #     target_level = Column(String(30), nullable=False)          #目標レベル：Must課題までをマスター
-# #     monday_study_time = Column(Integer, nullable=False)     #月曜日の学習時間：1
-# #     tuesday_study_time = Column(Integer, nullable=False)    #火曜日の学習時間：2
-# #     wednesday_study_time = Column(Integer, nullable=False)  #水曜日の学習時間：3
-# #     thursday_study_time = Column(Integer, nullable=False)   #木曜日の学習時間：2
-# #     friday_study_time = Column(Integer, nullable=False)     #金曜日の学習時間：1
-# #     saturday_study_time = Column(Integer, nullable=False)   #土曜日の学習時間：5
-# #     sunday_study_time = Column(Integer, nullable=False)     #日曜日の学習時間：5
-# #     motivation_statement = Column(String(255), nullable=False)  #意気込み：頑張ります
-# #     llm_answers = relationship("LLMAnswer", back_populates="user_setting")
-# #     uid_user = relationship("User", back_populates="user_setting")
+# @app.post("/create_user")
+# def create_user(user: User):
+#     logging.info("create_user関数が呼ばれました")
 
 
+
+#     database_url = os.environ.get("DATABASE_URL", "postgresql://postgres:password@db:5432/postgres")
+#     conn = psycopg2.connect(database_url)
+#     cur = conn.cursor()
+
+#     try:
+#         cur.execute("INSERT INTO users (uid, user_name) VALUES (%s, %s)",
+#                     (user.uid, user.user_name))
+#         conn.commit()
+#     except Exception as e:
+#         logging.info("呼ばれました")
+#         conn.rollback()
+#         raise HTTPException(status_code=500, detail=str(e))
+#     finally:
+#         cur.close()
+#         conn.close()
+
+#     return {"message": "User created successfully"}
 
 # # Pydanticモデルの定義（POSTリクエストのボディから受け取るデータ構造を定義する）
 # class Course(BaseModel):
@@ -583,9 +624,19 @@ async def create_llm_plan(request: Request, db: Session = Depends(get_db)):
 #         if line.startswith("レベル"):
 #             # print(line.startswith("レベル"))
 #             parts = line.split(": ")
+#             print("Parts after splitting:", parts)
 #             course_level = parts[0].strip()  # "レベルX" の "X" 部分
-#             date = parts[1].strip()  # "YYYY-MM-DD" の部分
-#             plan_items.append(schemas.PlanItem(course_level=course_level, date=date))
+#             date_str = parts[1].strip()  # "YYYY-MM-DD" 形式の日付文字列
+#             # date = parts[1].strip()  # "YYYY-MM-DD" の部分
+
+#             # " 1時間"を取り除いて日付部分だけを抽出
+#             date_str = date_str.split(' ')[0]  # 空白で分割して最初の部分（日付）を取得
+#             # 日付の文字列を datetime オブジェクトに変換
+#             date_obj = dt.strptime(date_str, "%Y-%m-%d")
+#             # datetime オブジェクトを YYYY-MM-DD 形式の文字列に再フォーマット
+#             formatted_date = date_obj.strftime("%Y-%m-%d")
+
+#             plan_items.append(schemas.PlanItem(course_level=course_level, date=formatted_date))
 #     print("plan_items",plan_items)
 #     return plan_items
    
@@ -599,7 +650,7 @@ async def create_llm_plan(request: Request, db: Session = Depends(get_db)):
 #         request_data = await request.json()
 
 #         # ユーザー設定とコース情報を取得
-#         user_setting_id = 9 #request_data['user_setting_id']
+#         user_setting_id = 11 #request_data['user_setting_id']
 #         user_setting = crud.get_user_setting(db, user_setting_id) 
 #         if not user_setting:
 #             raise HTTPException(status_code=404, detail="User setting not found")
@@ -639,20 +690,24 @@ async def create_llm_plan(request: Request, db: Session = Depends(get_db)):
 #         prompt = PromptTemplate(
 #             input_variables=["current_date","monday_study_time","tuesday_study_time","wednesday_study_time","thursday_study_time","friday_study_time","saturday_study_time","sunday_study_time","target_period","course_detail"],
 #             template="""
-#             今日は{current_date}です。私は、特定のユーザーのために{target_period}のコース期間内にlevel5-2までを完了する個別化された学習スケジュールを作成しています。
-#             各レベルのコース内容と所要時間は{course_detail}で、ユーザーの勉強可能時間は{monday_study_time},{tuesday_study_time},{wednesday_study_time},{thursday_study_time},{friday_study_time},{saturday_study_time},{sunday_study_time}です。
-#             私のタスクは、これらの情報を基にして、各コースレベルが特定の日付に割り当てられるようなスケジュールを立案することです。スケジュールは、具体的な日付と、その日に行うべきレベルを示す形式であるべきです。各レベルの勉強が終わるごとに次のレベルに進み、計画は最終レベルまで網羅されている必要があり、各レベルに対して実際に勉強する日程は複数ある場合があります。
+#             今日は{current_date}です。ユーザーの目標は、{target_period}内にlevel5-2までのコースを完了することです。各コースレベルの所要時間は{course_detail}に記載されており、ユーザーの1週間の勉強可能時間は以下の通りです:
 
-#             以下のようにスケジュールを提示してください：
+#             - 月曜日: {monday_study_time}時間
+#             - 火曜日: {tuesday_study_time}時間
+#             - 水曜日: {wednesday_study_time}時間
+#             - 木曜日: {thursday_study_time}時間
+#             - 金曜日: {friday_study_time}時間
+#             - 土曜日: {saturday_study_time}時間
+#             - 日曜日: {sunday_study_time}時間
+
+#             これらの情報を基にして、各コースレベルが特定の日付に割り当てられる学習スケジュールを立案してください。スケジュールは以下のフォーマットで提示してください：
 
 #             レベル0: [日付]
 #             レベル1-1: [日付]
-#             レベル1-2: [日付]
+#             ベル1-2: [日付]
 #             ... 以下、各レベルに対応する日付 ...
 
-#             各レベルの所要時間とユーザーの利用可能時間を考慮し、実際に勉強が行われる日を割り当ててください。計画のスタート日は現在の日付の次の日からにしてください。
-#             全てのレベルが完了するまでのスケジュールを提案してください。
-#             また、level1-2,level2-3,level3-3,level4-3の終了後には、ユーザーが予定に遅れた場合に備えてバッファーとして各2時間を各レベルの後に秘匿的に組み込んでください。
+#             計画は現在の日付の次の日から開始し、level5-2を含む全てのレベルが完了するまでの日程を示してください。level1-2, level2-3, level3-3, level4-3の終了後には、予定に遅れた場合に備えてバッファータイムを設けてください。それぞれのレベルの所要時間を考慮し、スケジュールに反映させてください。
 #             """
 #         )
         
@@ -660,6 +715,7 @@ async def create_llm_plan(request: Request, db: Session = Depends(get_db)):
 #         chain = LLMChain(llm=llm, prompt=prompt)
 #         # LLM　チェーンを実行
 #         prediction = chain.run(input_data)
+#         print("Prediction:", prediction)
 #         # 取得した予測結果を処理してレスポンスモデルに合う形に整形する
 #         plan_items = parse_llm_response(prediction.strip())
 #         print("plan_items:",plan_items)
@@ -671,6 +727,6 @@ async def create_llm_plan(request: Request, db: Session = Depends(get_db)):
 #         # db.rollback()
 #         logger.error(f"Error in llm-plan: {e}")
 #         print("Error creating LLM Answer:", e) # エラーログ
-#         raise HTTPException(status_code=500, detail=str(e))    
+#         raise HTTPException(status_code=500, detail=str(e))        
 
   
