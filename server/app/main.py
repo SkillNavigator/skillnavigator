@@ -45,7 +45,7 @@ load_dotenv()
 #OpenAIのAPIキーを環境変数から取得
 openai_api_key = os.getenv("OPENAI_API_KEY") 
 #初期化　temperature揺れる回答を小さい数字で揺れなくしてる
-llm = OpenAI(model_name="gpt-3.5-turbo-instruct" , temperature=0.2)
+llm = OpenAI(model_name="gpt-3.5-turbo-instruct" , temperature=0.1)
 # 今日の日付を取得
 current_date = datetime.date.today().isoformat()  # YYYY-MM-DD形式
 
@@ -324,12 +324,9 @@ async def create_llm_plan(request: Request, db: Session = Depends(get_db)):
             - ユーザの「学習経験」によって学習所要時間には誤差が発生することを想定します。
             - カリキュラムには、「開始日」と「受講期間」が設けられています。
             - User は曜日ごとに学習可能な時間リソースが異なります。
-            - 「課題設定」で`advance`課題までをマスターを指定したユーザーには各`level`ごとに3時間を追加した計画が必要です。
 
             ## 必須要件
-            - `level` を修了するごとに次の `level`に進み、受講期間内に `level5-2` までを修了する計画である必要があります。
-            - 出力フォーマット以外はいりません。
-
+            - 受講期間内に `level5-2` までを修了する計画である必要があります
 
             ## 学習所要時間
             {course_detail}
@@ -363,27 +360,28 @@ async def create_llm_plan(request: Request, db: Session = Depends(get_db)):
             ## 依頼
 
             - 開始日と受講期間、学習可能な時間リソースから、使える時間リソースをステップバイステップで算出してください。
-            - 学習経験が未経験者の場合は計画に余裕を設けてください。
+            - 学習経験が未経験者の場合は計画に充分な余裕を設けてください。
+            - 課題設定がadvance課題までをマスターの場合は、各レベルごとに3時間ずつ加算してください。
+            - 受講期間が長期6か月の場合は、level5-2に達するのは開始日から4か月後になるように算出してください。
             - 学習所要時間と学習経験を考慮して、学習に必要な所要時間を再設定してください。
-            - 上記を考慮して、User に最適な学習スケジュールを下記のフォーマットで提示してください。
+            - 上記を考慮して、User に最適な学習スケジュールを下記のフォーマットで500文字以内で提示してください。
 
             ## 出力フォーマット
 
-            - level0: [yyyy-MM-dd] 
-            - level1-1: [yyyy-MM-dd]  
-            - level1-2: [yyyy-MM-dd]  
-            - level2-1: [yyyy-MM-dd]  
-            - level2-2: [yyyy-MM-dd]  
-            - level2-3: [yyyy-MM-dd]  
-            - level3-1: [yyyy-MM-dd]  
-            - level3-2: [yyyy-MM-dd]  
-            - level3-3: [yyyy-MM-dd]  
-            - level4-1: [yyyy-MM-dd] 
-            - level4-2: [yyyy-MM-dd] 
-            - level4-3: [yyyy-MM-dd]  
-            - level5-1: [yyyy-MM-dd]  
-            - level5-2: [yyyy-MM-dd] 
-
+            level0: [yyyy-MM-dd] 
+            level1-1: [yyyy-MM-dd]  
+            level1-2: [yyyy-MM-dd]  
+            level2-1: [yyyy-MM-dd]  
+            level2-2: [yyyy-MM-dd]  
+            level2-3: [yyyy-MM-dd]  
+            level3-1: [yyyy-MM-dd]  
+            level3-2: [yyyy-MM-dd]  
+            level3-3: [yyyy-MM-dd]  
+            level4-1: [yyyy-MM-dd] 
+            level4-2: [yyyy-MM-dd] 
+            level4-3: [yyyy-MM-dd]  
+            level5-1: [yyyy-MM-dd]  
+            level5-2: [yyyy-MM-dd] 
             """
 
         )

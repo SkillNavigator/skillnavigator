@@ -63,7 +63,10 @@
   --tw-text-opacity: 1;
   color: rgb(40 0 350 / var(--tw-text-opacity));
 }
-
+.bg-blue-500 {
+  --tw-bg-opacity: 1;
+  background-color: rgb(40 00 400 / var(--tw-bg-opacity));
+}
 :root {
   --foreground-rgb: 0, 0, 0;
   --background-start-rgb: 214, 219, 220;

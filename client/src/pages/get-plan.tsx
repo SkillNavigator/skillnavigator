@@ -9,7 +9,7 @@ const GetPlan  = () => {
   const handlePlanClick = async () => {
   try {
     // 1. ユーザー設定情報を取得
-    const userSettingId = 19;
+    const userSettingId = 20;
     const userSettingResponse = await fetch(`http://localhost:8000/user-settings/${userSettingId}`);
     const userSettingData = await userSettingResponse.json();
 
@@ -53,22 +53,22 @@ return (
             my-4 text-center
             font-bold text-5xl tracking-tight
             text-blue-500
-            bg-clip-text text-transparent `}>Schedules for Skillnavigator 
+            bg-clip-text text-transparent `}>Schedules for SkillNavigator 
         </h2>
         <HamburgerMenu />
         <div className="overflow-x-auto mt-4">
           <table className="min-w-full items-center divide-y-2 divide-x-2 divide-black border-y-2 border-black sm:rounded-lg">
             <thead>
               <tr>
-                <th scope="col" className="border-2 border-black px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">教材</th>
-                <th scope="col" className="border-2 border-black px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">実地日</th>
+                <th scope="col" className="border-2 border-black px-6 py-3 md:text-2xl text-center text-xs font-bold text-black uppercase tracking-wider">教材</th>
+                <th scope="col" className="border-2 border-black px-6 py-3 md:text-2xl text-center text-xs font-bold text-black uppercase tracking-wider">実地日</th>
               </tr>
             </thead>
             <tbody className="divide-y-2 divide-black">
               {Array.isArray(schedules) && schedules.map((schedule, index) => (
                 <tr key={index} >
-                  <td className="border-2 border-black px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">{schedule.courseLevel}</td>
-                  <td className="border-2 border-black px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">{schedule.date}</td>
+                  <td className="border-2 border-black px-6 py-3 md:text-2xl text-center text-xs font-medium text-black uppercase tracking-wider">{schedule.courseLevel}</td>
+                  <td className="border-2 border-black px-6 py-3 md:text-2xl text-center text-xs font-medium text-black uppercase tracking-wider">{schedule.date}</td>
                 </tr>
               ))}
             </tbody>
