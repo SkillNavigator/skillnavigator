@@ -47,7 +47,7 @@ class LLMAnswer(Base):
     __tablename__ = "llm_answers"
 
     llm_answers_id = Column(Integer, primary_key=True, index=True)
-    course_level = Column(String(255), nullable=False)
+    # course_level = Column(String(255), nullable=False)
     date = Column(Date, nullable=False)
     user_setting_id = Column(Integer, ForeignKey('user_setting.user_setting_id')) 
     user_setting = relationship("UserSetting", back_populates="llm_answers")

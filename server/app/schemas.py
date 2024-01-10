@@ -29,9 +29,17 @@ class UserSetting(BaseModel):
 
 #llmの返答の形を固定(PlaniItem,StudyPlanRespone)
 
+#現在の正規コード
 class PlanItem(BaseModel):
     course_level: str  # コースのレベル
     date: str  # 日付（YYYY-MM-DD形式）
+
+# LLM立案内容の日付がlevel0: [yyyy/MM/dd] - [yyyy/MM/dd]形になるために作ったコード schemasとmain.py変更必須
+# class PlanItem(BaseModel):
+#     course_level: str
+#     start_date: str  # 開始日（YYYY-MM-DD形式）
+#     end_date: str    # 終了日（YYYY-MM-DD形式）
+
 
 class LLMAnswer(BaseModel):
     plan: List[PlanItem]
