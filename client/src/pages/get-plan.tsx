@@ -9,7 +9,7 @@ const GetPlan  = () => {
   const handlePlanClick = async () => {
   try {
     // 1. ユーザー設定情報を取得
-    const userSettingId = 20;
+    const userSettingId = 45;
     const userSettingResponse = await fetch(`http://localhost:8000/user-settings/${userSettingId}`);
     const userSettingData = await userSettingResponse.json();
 
@@ -47,13 +47,13 @@ const GetPlan  = () => {
 };
 
 return (
-    <div className="flex flex-col items-center justify-center h-screen bg-gradient-to-r from-indigo-300 via-purple-300 to-pink-300">
+    <div className="flex flex-col items-center justify-center h-screen bg-gradient-to-r from-indigo-200 via-purple-200 to-pink-200">
       <div className="w-full max-w-6xl mx-auto overflow-x-auto">
         <h2 className={`
             my-4 text-center
-            font-bold text-5xl tracking-tight
+            font-bold text-6xl tracking-tight
             text-blue-500
-            bg-clip-text text-transparent `}>Schedules for SkillNavigator 
+            bg-clip-text text-transparent `}>計画立案
         </h2>
         <HamburgerMenu />
         <div className="overflow-x-auto mt-4">
@@ -61,7 +61,7 @@ return (
             <thead>
               <tr>
                 <th scope="col" className="border-2 border-black px-6 py-3 md:text-2xl text-center text-xs font-bold text-black uppercase tracking-wider">教材</th>
-                <th scope="col" className="border-2 border-black px-6 py-3 md:text-2xl text-center text-xs font-bold text-black uppercase tracking-wider">実地日</th>
+                <th scope="col" className="border-2 border-black px-6 py-3 md:text-2xl text-center text-xs font-bold text-black uppercase tracking-wider">開始日</th>
               </tr>
             </thead>
             <tbody className="divide-y-2 divide-black">
@@ -77,7 +77,7 @@ return (
         <div className="mt-4 text-center">
           <button className={`
             bg-purple-400 hover:bg-pink-400 
-            p-3 rounded-full font-bold transition duration-300
+            p-3 rounded-full font-bold transition flex-col
             text-black`} onClick={handlePlanClick}>計画を立案する
             </button>
           <button className={`

@@ -21,8 +21,8 @@ function LogInButton() {
     
     };
         return (
-             <button onClick={signInWithGoogle}>
-                <p>Googleでログイン</p>
-            </button>
-            );
-        };
+            <button className="bg-purple-400 hover:bg-pink-400 p-3 rounded-full font-bold transition duration-300 text-black" onClick={signInWithGoogle}>
+            <p>Googleでログイン</p>
+        </button>
+        );
+    };

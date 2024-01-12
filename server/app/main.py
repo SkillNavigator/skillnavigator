@@ -45,7 +45,7 @@ load_dotenv()
 #OpenAIのAPIキーを環境変数から取得
 openai_api_key = os.getenv("OPENAI_API_KEY") 
 #初期化　temperature揺れる回答を小さい数字で揺れなくしてる
-llm = OpenAI(model_name="gpt-3.5-turbo-instruct" , temperature=0.1)
+llm = OpenAI(model_name="gpt-3.5-turbo-instruct" , temperature=0.3)
 # 今日の日付を取得
 current_date = datetime.date.today().isoformat()  # YYYY-MM-DD形式
 
@@ -304,87 +304,569 @@ async def create_llm_plan(request: Request, db: Session = Depends(get_db)):
             "saturday_study_time": user_setting.saturday_study_time,
             "sunday_study_time": user_setting.sunday_study_time,
             "target_period": user_setting.target_period,
-            "learning_history":user_setting.learning_history,
-            "target_level":user_setting.target_level,
             "course_detail": course_details_dicts
         }
+
+           
+            # "learning_history":user_setting.learning_history,
+            # "target_level":user_setting.target_level,
         
-        prompt = PromptTemplate(
-            input_variables=["current_date","monday_study_time","tuesday_study_time","wednesday_study_time","thursday_study_time","friday_study_time","saturday_study_time","sunday_study_time","target_period","learning_history","target_level","course_detail"],
-            template="""
-            あなたは User に最適な学習スケジュールを立案する役割を持っています。
+        prompt=" "
 
-            ## カリキュラム情報
+        if(user_setting.target_period == "短期3か月"):
+            if(user_setting.learning_history =="未経験"):
+                if(user_setting.target_level == "Must課題までをマスター"):
+                    prompt = PromptTemplate(
+                        input_variables=["current_date","monday_study_time","tuesday_study_time","wednesday_study_time","thursday_study_time","friday_study_time","saturday_study_time","sunday_study_time","target_period","course_detail"],
+                        template="""
+                        あなたは User に最適な学習スケジュールを立案する役割を持っています。
 
-            User は下記のようなカリキュラムを受講します。
+                        ## カリキュラム情報
 
-            - プログラミングの基礎的な内容を学習するカリキュラムです。
-            - カリキュラムは `level` で分割されていて、`level1-1` から `level5-2` まであります。
-            - カリキュラムは、`level` ごとに必要な「学習所要時間」が設定されています。
-            - ユーザの「学習経験」によって学習所要時間には誤差が発生することを想定します。
-            - カリキュラムには、「開始日」と「受講期間」が設けられています。
-            - User は曜日ごとに学習可能な時間リソースが異なります。
+                        User は下記のようなカリキュラムを受講します。
 
-            ## 必須要件
-            - 受講期間内に `level5-2` までを修了する計画である必要があります
+                        - プログラミングの基礎的な内容を学習するカリキュラムです。
+                        - カリキュラムは `level` で分割されていて、`level1-1` から `level5-2` まであります。
+                        - カリキュラムは、`level` ごとに必要な「学習所要時間」が設定されています。
+                        - User は曜日ごとに学習可能な時間リソースが異なります。
+                        - 出力フォーマット以外の情報は必要ありません。
 
-            ## 学習所要時間
-            {course_detail}
 
-            ## 開始日
+                        ## 学習所要時間
 
-            {current_date}
+                        {course_detail}
 
-            ## 受講期間
+                        ## 開始日
 
-            {target_period}
+                        {current_date}
 
-            ## 学習可能な時間リソース
+                        ## 受講期間
 
-            - 月曜日: {monday_study_time}時間
-            - 火曜日: {tuesday_study_time}時間
-            - 水曜日: {wednesday_study_time}時間
-            - 木曜日: {thursday_study_time}時間
-            - 金曜日: {friday_study_time}時間
-            - 土曜日: {saturday_study_time}時間
-            - 日曜日: {sunday_study_time}時間
+                        {target_period}
 
-            ## 学習経験
+                        ## 学習可能な時間リソース
 
-            {learning_history}
+                        - 月曜日: {monday_study_time}時間
+                        - 火曜日: {tuesday_study_time}時間
+                        - 水曜日: {wednesday_study_time}時間
+                        - 木曜日: {thursday_study_time}時間
+                        - 金曜日: {friday_study_time}時間
+                        - 土曜日: {saturday_study_time}時間
+                        - 日曜日: {sunday_study_time}時間
 
-            ## 課題設定
+                        ## 前提条件
 
-            {target_level}
+                        - ユーザーは初めてプログラミングを学ぶため、理解に時間がかかり、学習の進捗ペースが遅いです。
+                        - 学習所要時間より大幅に学習時間を必要としています。
+                        - 学習可能な時間リソースの通り、学習可能時間が多いため開始日から3ヶ月以内でlevel5-2までを終了さてください。
+                        
 
-            ## 依頼
+                        ## 依頼
 
-            - 開始日と受講期間、学習可能な時間リソースから、使える時間リソースをステップバイステップで算出してください。
-            - 学習経験が未経験者の場合は計画に充分な余裕を設けてください。
-            - 課題設定がadvance課題までをマスターの場合は、各レベルごとに3時間ずつ加算してください。
-            - 受講期間が長期6か月の場合は、level5-2に達するのは開始日から4か月後になるように算出してください。
-            - 学習所要時間と学習経験を考慮して、学習に必要な所要時間を再設定してください。
-            - 上記を考慮して、User に最適な学習スケジュールを下記のフォーマットで500文字以内で提示してください。
+                        - 開始日と受講期間、学習可能な時間リソースから、使える時間リソースをステップバイステップで算出してください。
+                        - 開始日より3ヶ月以内に `level5-2` までを終了する計画を算出してください。
+                        - 学習所要時間と学習可能な時間リソースを考慮して、学習に必要な所要時間を再設定してください。
+                        - ユーザーは学習の進捗ペースが遅いことを考慮して計画を立ててください。
+                        - 上記を考慮して、User に最適な学習スケジュールを下記のフォーマットで300文字以内で提示してください。
+                        - 出力フォーマット以外の情報は必要ありません。
 
-            ## 出力フォーマット
+                        ## 出力フォーマット
 
-            level0: [yyyy-MM-dd] 
-            level1-1: [yyyy-MM-dd]  
-            level1-2: [yyyy-MM-dd]  
-            level2-1: [yyyy-MM-dd]  
-            level2-2: [yyyy-MM-dd]  
-            level2-3: [yyyy-MM-dd]  
-            level3-1: [yyyy-MM-dd]  
-            level3-2: [yyyy-MM-dd]  
-            level3-3: [yyyy-MM-dd]  
-            level4-1: [yyyy-MM-dd] 
-            level4-2: [yyyy-MM-dd] 
-            level4-3: [yyyy-MM-dd]  
-            level5-1: [yyyy-MM-dd]  
-            level5-2: [yyyy-MM-dd] 
-            """
+                        level0: [yyyy-MM-dd] 
+                        level1-1: [yyyy-MM-dd]  
+                        level1-2: [yyyy-MM-dd]  
+                        level2-1: [yyyy-MM-dd]  
+                        level2-2: [yyyy-MM-dd]  
+                        level2-3: [yyyy-MM-dd]  
+                        level3-1: [yyyy-MM-dd]  
+                        level3-2: [yyyy-MM-dd]  
+                        level3-3: [yyyy-MM-dd]  
+                        level4-1: [yyyy-MM-dd] 
+                        level4-2: [yyyy-MM-dd] 
+                        level4-3: [yyyy-MM-dd]  
+                        level5-1: [yyyy-MM-dd]  
+                        level5-2: [yyyy-MM-dd] 
+                        """
 
-        )
+                    )
+                else: #未経験✖️advance課題の人
+                    prompt = PromptTemplate(
+                        input_variables=["current_date","monday_study_time","tuesday_study_time","wednesday_study_time","thursday_study_time","friday_study_time","saturday_study_time","sunday_study_time","target_period","course_detail"],
+                        template="""
+                        あなたは User に最適な学習スケジュールを立案する役割を持っています。
+
+                        ## カリキュラム情報
+
+                        - プログラミングの基礎的な内容を学習するカリキュラムです。
+                        - カリキュラムは `level` で分割されていて、`level1-1` から `level5-2` まであります。
+                        - カリキュラムは、`level` ごとに必要な「学習所要時間」が設定されています。
+                        - User は曜日ごとに学習可能な時間リソースが異なります。
+
+
+                        ## 学習所要時間
+
+                        {course_detail}
+
+                        ## 開始日
+
+                        {current_date}
+
+                        ## 受講期間
+
+                        {target_period}
+
+
+                        ## 学習可能な時間リソース
+
+                        - 月曜日: {monday_study_time}時間
+                        - 火曜日: {tuesday_study_time}時間
+                        - 水曜日: {wednesday_study_time}時間
+                        - 木曜日: {thursday_study_time}時間
+                        - 金曜日: {friday_study_time}時間
+                        - 土曜日: {saturday_study_time}時間
+                        - 日曜日: {sunday_study_time}時間
+
+                        ## Userの特徴
+
+                        - ユーザーは初めてプログラミングを学ぶため、理解に時間がかかり、学習の進捗ペースが遅いです。
+                        - 学習所要時間より大幅に学習時間を必要としています。
+                        - 学習中、多くの課題に取り組むため、各levelごとに3時間のバッファー時間を設けてください。
+                        - 学習可能な時間リソースの通り、学習可能時間が多いため開始日から3ヶ月以内でlevel5-2までを終了さてください。
+
+                        ## 依頼
+
+                        - 開始日と受講期間、学習可能な時間リソースから、使える時間リソースをステップバイステップで算出してください。
+                        - 開始日より3ヶ月以内に `level5-2` までを終了する計画を算出してください。
+                        - 学習所要時間と学習可能な時間リソースを考慮して、学習に必要な所要時間を再設定してください。
+                        - ユーザーは学習の進捗ペースが遅いことを考慮して計画を立ててください。
+                        - 上記を考慮して、User に最適な学習スケジュールを下記のフォーマットで300文字以内で提示してください。
+                        - 出力フォーマット以外の情報は必要ありません。
+
+                        ## 出力フォーマット
+
+                        level0: [yyyy-MM-dd] 
+                        level1-1: [yyyy-MM-dd]  
+                        level1-2: [yyyy-MM-dd]  
+                        level2-1: [yyyy-MM-dd]  
+                        level2-2: [yyyy-MM-dd]  
+                        level2-3: [yyyy-MM-dd]  
+                        level3-1: [yyyy-MM-dd]  
+                        level3-2: [yyyy-MM-dd]  
+                        level3-3: [yyyy-MM-dd]  
+                        level4-1: [yyyy-MM-dd] 
+                        level4-2: [yyyy-MM-dd] 
+                        level4-3: [yyyy-MM-dd]  
+                        level5-1: [yyyy-MM-dd]  
+                        level5-2: [yyyy-MM-dd] 
+                        """
+
+                    )
+            else: #未経験以外のmust　よしこさん
+                if(user_setting.target_level == "Must課題までをマスター"):
+                    prompt = PromptTemplate(
+                        input_variables=["current_date","monday_study_time","tuesday_study_time","wednesday_study_time","thursday_study_time","friday_study_time","saturday_study_time","sunday_study_time","target_period","course_detail"],
+                        template="""
+                        あなたは User に最適な学習スケジュールを立案する役割を持っています。
+
+                        ## カリキュラム情報
+
+                        User は下記のようなカリキュラムを受講します。
+
+                        - プログラミングの基礎的な内容を学習するカリキュラムです。
+                        - カリキュラムは `level` で分割されていて、`level1-1` から `level5-2` まであります。
+                        - カリキュラムは、`level` ごとに必要な「学習所要時間」が設定されています。
+                        - User は曜日ごとに学習可能な時間リソースが異なります。
+
+
+                        ## 学習所要時間
+                        {course_detail}
+
+                        ## 開始日
+
+                        {current_date}
+
+                        ## 受講期間
+
+                        {target_period}
+
+
+                        ## 学習可能な時間リソース
+
+                        - 月曜日: {monday_study_time}時間
+                        - 火曜日: {tuesday_study_time}時間
+                        - 水曜日: {wednesday_study_time}時間
+                        - 木曜日: {thursday_study_time}時間
+                        - 金曜日: {friday_study_time}時間
+                        - 土曜日: {saturday_study_time}時間
+                        - 日曜日: {sunday_study_time}時間
+
+                        ## 必須要件
+                        - 開始日より3ヶ月以内に `level5-2` までを修了する計画である必要があります。
+
+                        ## Userの特徴
+
+                        - すでにプログラミングを学習しているため、カリキュラムの進捗が早いことを考慮して計画をしてください。
+
+                        ## 依頼
+
+                        - 開始日と受講期間、学習可能な時間リソースから、使える時間リソースをステップバイステップで算出してください。
+                        - 学習所要時間と学習可能な時間リソースを考慮して、学習に必要な所要時間を再設定してください。
+                        - 上記を考慮して、User に最適な学習スケジュールを下記のフォーマットで300文字以内で提示してください。
+                        - 出力フォーマット以外の情報は必要ありません。
+
+                        ## 出力フォーマット
+
+                        level0: [yyyy-MM-dd] 
+                        level1-1: [yyyy-MM-dd]  
+                        level1-2: [yyyy-MM-dd]  
+                        level2-1: [yyyy-MM-dd]  
+                        level2-2: [yyyy-MM-dd]  
+                        level2-3: [yyyy-MM-dd]  
+                        level3-1: [yyyy-MM-dd]  
+                        level3-2: [yyyy-MM-dd]  
+                        level3-3: [yyyy-MM-dd]  
+                        level4-1: [yyyy-MM-dd] 
+                        level4-2: [yyyy-MM-dd] 
+                        level4-3: [yyyy-MM-dd]  
+                        level5-1: [yyyy-MM-dd]  
+                        level5-2: [yyyy-MM-dd] 
+                        """
+
+                    )
+                else: #未経験者以外でadvance
+                    prompt = PromptTemplate(
+                        input_variables=["current_date","monday_study_time","tuesday_study_time","wednesday_study_time","thursday_study_time","friday_study_time","saturday_study_time","sunday_study_time","course_detail"],
+                        template="""
+                        あなたは User に最適な学習スケジュールを立案する役割を持っています。
+
+                        ## カリキュラム情報
+
+                        User は下記のようなカリキュラムを受講します。
+
+                        - プログラミングの基礎的な内容を学習するカリキュラムです。
+                        - カリキュラムは `level` で分割されていて、`level1-1` から `level5-2` まであります。
+                        - カリキュラムは、`level` ごとに必要な「学習所要時間」が設定されています。
+                        - User は曜日ごとに学習可能な時間リソースが異なります。
+
+                        ## 必須要件
+                        - 受講期間内に `level5-2` までを修了する計画である必要があります。
+
+                        ## 学習所要時間
+
+                        {course_detail}
+
+                        ## 開始日
+
+                        {current_date}
+
+                        ## 学習可能な時間リソース
+
+                        - 月曜日: {monday_study_time}時間
+                        - 火曜日: {tuesday_study_time}時間
+                        - 水曜日: {wednesday_study_time}時間
+                        - 木曜日: {thursday_study_time}時間
+                        - 金曜日: {friday_study_time}時間
+                        - 土曜日: {saturday_study_time}時間
+                        - 日曜日: {sunday_study_time}時間
+
+                        ## 必須要件
+                        - 開始日より3ヶ月以内に `level5-2` までを修了する計画である必要があります。
+
+                        ## 依頼
+
+                        - 開始日と受講期間、学習可能な時間リソースから、使える時間リソースをステップバイステップで算出してください。
+                        - 学習所要時間と学習可能な時間リソースを考慮して、学習に必要な所要時間を再設定してください。
+                        - このユーザーは学習ペースが遅いことを考慮してください。
+                        - 各レベルごとにバッファーとして3時間設けて、計画を立案してください。
+                        - 上記を考慮して、User に最適な学習スケジュールを下記のフォーマットで300文字以内で提示してください。
+
+                        ## 出力フォーマット
+
+                        level0: [yyyy-MM-dd] 
+                        level1-1: [yyyy-MM-dd]  
+                        level1-2: [yyyy-MM-dd]  
+                        level2-1: [yyyy-MM-dd]  
+                        level2-2: [yyyy-MM-dd]  
+                        level2-3: [yyyy-MM-dd]  
+                        level3-1: [yyyy-MM-dd]  
+                        level3-2: [yyyy-MM-dd]  
+                        level3-3: [yyyy-MM-dd]  
+                        level4-1: [yyyy-MM-dd] 
+                        level4-2: [yyyy-MM-dd] 
+                        level4-3: [yyyy-MM-dd]  
+                        level5-1: [yyyy-MM-dd]  
+                        level5-2: [yyyy-MM-dd] 
+                        """
+
+                    )
+    
+        else: #6か月　花子さん
+            if(user_setting.learning_history =="未経験"):
+                if(user_setting.target_level == "Must課題までをマスター"):
+                    prompt = PromptTemplate(
+                        input_variables=["current_date","monday_study_time","tuesday_study_time","wednesday_study_time","thursday_study_time","friday_study_time","saturday_study_time","sunday_study_time","target_period","course_detail"],
+                        template="""
+                        あなたは User に最適な学習スケジュールを立案する役割を持っています。
+
+                        ## カリキュラム情報
+
+                        User は下記のようなカリキュラムを受講します。
+
+                        - プログラミングの基礎的な内容を学習するカリキュラムです。
+                        - カリキュラムは `level` で分割されていて、`level1-1` から `level5-2` まであります。
+                        - カリキュラムは、`level` ごとに必要な「学習所要時間」が設定されています。
+                        - User は曜日ごとに学習可能な時間リソースが異なります。
+
+                        ## 学習所要時間
+
+                        {course_detail}
+
+                        ## 開始日
+
+                        {current_date}
+
+                        ## 受講期間
+
+                        {target_period}
+
+
+                        ## 学習可能な時間リソース
+
+                        - 月曜日: {monday_study_time}時間
+                        - 火曜日: {tuesday_study_time}時間
+                        - 水曜日: {wednesday_study_time}時間
+                        - 木曜日: {thursday_study_time}時間
+                        - 金曜日: {friday_study_time}時間
+                        - 土曜日: {saturday_study_time}時間
+                        - 日曜日: {sunday_study_time}時間
+
+
+                        ## Userの特徴
+
+                        - プログラミング学習が初めてなので、学習のペースが遅いです。
+                        - 学習所要時間より大幅に学習時間を必要としています。
+                        - 3月10日にlevel3-1を、4月20日に`level5-1` の学習が始められるよう、逆算して計画を立ててください。
+                        
+
+                        ## 依頼
+
+                        - 開始日と学習可能な時間リソースから、使える時間リソースをステップバイステップで算出してください。
+                        - 学習所要時間と学習可能な時間リソースとUserの特徴を考慮して、学習に必要な所要時間を再設定してください。
+                        - 上記を考慮して、User に最適な学習スケジュールを下記のフォーマットで300文字以内で提示してください。
+                        - 出力フォーマット以外の情報は必要ありません。
+
+                        ## 出力フォーマット
+
+                        level0: [yyyy-MM-dd] 
+                        level1-1: [yyyy-MM-dd]  
+                        level1-2: [yyyy-MM-dd]  
+                        level2-1: [yyyy-MM-dd]  
+                        level2-2: [yyyy-MM-dd]  
+                        level2-3: [yyyy-MM-dd]  
+                        level3-1: [yyyy-MM-dd]  
+                        level3-2: [yyyy-MM-dd]  
+                        level3-3: [yyyy-MM-dd]  
+                        level4-1: [yyyy-MM-dd] 
+                        level4-2: [yyyy-MM-dd] 
+                        level4-3: [yyyy-MM-dd]  
+                        level5-1: [yyyy-MM-dd]  
+                        level5-2: [yyyy-MM-dd] 
+                        """
+
+                    )
+                else: #未経験✖️advance課題の人
+                    prompt = PromptTemplate(
+                        input_variables=["current_date","monday_study_time","tuesday_study_time","wednesday_study_time","thursday_study_time","friday_study_time","saturday_study_time","sunday_study_time","course_detail"],
+                        template="""
+                        あなたは User に最適な学習スケジュールを立案する役割を持っています。
+
+                        ## カリキュラム情報
+
+                        User は下記のようなカリキュラムを受講します。
+
+                        - プログラミングの基礎的な内容を学習するカリキュラムです。
+                        - カリキュラムは `level` で分割されていて、`level1-1` から `level5-2` まであります。
+                        - カリキュラムは、`level` ごとに必要な「学習所要時間」が設定されています。
+                        - User は曜日ごとに学習可能な時間リソースが異なります。
+
+
+                        ## 学習所要時間
+
+                        {course_detail}
+
+                        ## 開始日
+
+                        {current_date}
+
+                        ## 学習可能な時間リソース
+
+                        - 月曜日: {monday_study_time}時間
+                        - 火曜日: {tuesday_study_time}時間
+                        - 水曜日: {wednesday_study_time}時間
+                        - 木曜日: {thursday_study_time}時間
+                        - 金曜日: {friday_study_time}時間
+                        - 土曜日: {saturday_study_time}時間
+                        - 日曜日: {sunday_study_time}時間
+
+                        ## 必須要件
+                        - 開始日より6ヶ月以内に `level5-2` までを修了する計画である必要があります。
+
+                        ## 依頼
+
+                        - 開始日と受講期間、学習可能な時間リソースから、使える時間リソースをステップバイステップで算出してください。
+                        - 学習所要時間と学習可能な時間リソースを考慮して、学習に必要な所要時間を再設定してください。
+                        - このユーザーは学習ペースが遅いことを考慮してください。
+                        - 各レベルごとにバッファーとして5時間設けて、計画を立案してください。
+                        - 上記を考慮して、User に最適な学習スケジュールを下記のフォーマットで300文字以内で提示してください。
+
+                        ## 出力フォーマット
+
+                        level0: [yyyy-MM-dd] 
+                        level1-1: [yyyy-MM-dd]  
+                        level1-2: [yyyy-MM-dd]  
+                        level2-1: [yyyy-MM-dd]  
+                        level2-2: [yyyy-MM-dd]  
+                        level2-3: [yyyy-MM-dd]  
+                        level3-1: [yyyy-MM-dd]  
+                        level3-2: [yyyy-MM-dd]  
+                        level3-3: [yyyy-MM-dd]  
+                        level4-1: [yyyy-MM-dd] 
+                        level4-2: [yyyy-MM-dd] 
+                        level4-3: [yyyy-MM-dd]  
+                        level5-1: [yyyy-MM-dd]  
+                        level5-2: [yyyy-MM-dd] 
+                        """
+
+                    )
+            else: #未経験以外のmust
+                if(user_setting.target_level == "Must課題までをマスター"):
+                    prompt = PromptTemplate(
+                        input_variables=["current_date","monday_study_time","tuesday_study_time","wednesday_study_time","thursday_study_time","friday_study_time","saturday_study_time","sunday_study_time","course_detail"],
+                        template="""
+                        あなたは User に最適な学習スケジュールを立案する役割を持っています。
+
+                        ## カリキュラム情報
+
+                        User は下記のようなカリキュラムを受講します。
+
+                        - プログラミングの基礎的な内容を学習するカリキュラムです。
+                        - カリキュラムは `level` で分割されていて、`level1-1` から `level5-2` まであります。
+                        - カリキュラムは、`level` ごとに必要な「学習所要時間」が設定されています。
+                        - User は曜日ごとに学習可能な時間リソースが異なります。
+
+                        ## 学習所要時間
+
+                        {course_detail}
+
+                        ## 開始日
+
+                        {current_date}
+
+                        ## 学習可能な時間リソース
+
+                        - 月曜日: {monday_study_time}時間
+                        - 火曜日: {tuesday_study_time}時間
+                        - 水曜日: {wednesday_study_time}時間
+                        - 木曜日: {thursday_study_time}時間
+                        - 金曜日: {friday_study_time}時間
+                        - 土曜日: {saturday_study_time}時間
+                        - 日曜日: {sunday_study_time}時間
+
+                        ## 必須要件
+                        - 開始日より6ヶ月以内に `level5-2` までを修了する計画である必要があります。
+
+                        ## 依頼
+
+                        - 開始日と受講期間、学習可能な時間リソースから、使える時間リソースをステップバイステップで算出してください。
+                        - 学習所要時間と学習可能な時間リソースを考慮して、学習に必要な所要時間を再設定してください。
+                        - このユーザーは学習ペースと理解がとても早いので計画時に考慮してください。
+                        - 上記を考慮して、User に最適な学習スケジュールを下記のフォーマットで300文字以内で提示してください。
+
+                        ## 出力フォーマット
+
+                        level0: [yyyy-MM-dd] 
+                        level1-1: [yyyy-MM-dd]  
+                        level1-2: [yyyy-MM-dd]  
+                        level2-1: [yyyy-MM-dd]  
+                        level2-2: [yyyy-MM-dd]  
+                        level2-3: [yyyy-MM-dd]  
+                        level3-1: [yyyy-MM-dd]  
+                        level3-2: [yyyy-MM-dd]  
+                        level3-3: [yyyy-MM-dd]  
+                        level4-1: [yyyy-MM-dd] 
+                        level4-2: [yyyy-MM-dd] 
+                        level4-3: [yyyy-MM-dd]  
+                        level5-1: [yyyy-MM-dd]  
+                        level5-2: [yyyy-MM-dd] 
+                        """
+
+                    )
+                else: #未経験者以外でadvance
+                    prompt = PromptTemplate(
+                        input_variables=["current_date","monday_study_time","tuesday_study_time","wednesday_study_time","thursday_study_time","friday_study_time","saturday_study_time","sunday_study_time","course_detail"],
+                        template="""
+                        あなたは User に最適な学習スケジュールを立案する役割を持っています。
+
+                        ## カリキュラム情報
+
+                        User は下記のようなカリキュラムを受講します。
+
+                        - プログラミングの基礎的な内容を学習するカリキュラムです。
+                        - カリキュラムは `level` で分割されていて、`level1-1` から `level5-2` まであります。
+                        - カリキュラムは、`level` ごとに必要な「学習所要時間」が設定されています。
+                        - User は曜日ごとに学習可能な時間リソースが異なります。
+
+                        ## 学習所要時間
+                        
+                        {course_detail}
+
+
+                        ## 開始日
+
+                        {current_date}
+
+
+                        ## 学習可能な時間リソース
+
+                        - 月曜日: {monday_study_time}時間
+                        - 火曜日: {tuesday_study_time}時間
+                        - 水曜日: {wednesday_study_time}時間
+                        - 木曜日: {thursday_study_time}時間
+                        - 金曜日: {friday_study_time}時間
+                        - 土曜日: {saturday_study_time}時間
+                        - 日曜日: {sunday_study_time}時間
+
+                        ## 必須要件
+                        - 開始日より6ヶ月以内に `level5-2` までを修了する計画である必要があります。
+
+                        ## 依頼
+
+                        - 開始日と受講期間、学習可能な時間リソースから、使える時間リソースをステップバイステップで算出してください。
+                        - 学習所要時間と学習可能な時間リソースを考慮して、学習に必要な所要時間を再設定してください。
+                        - このユーザーは学習所要時間は{course_detail}通りです。
+                        - 各レベルごとにバッファーとして3時間設けて、計画を立案してください。
+                        - 上記を考慮して、User に最適な学習スケジュールを下記のフォーマットで300文字以内で提示してください。
+
+                        ## 出力フォーマット
+
+                        level0: [yyyy-MM-dd] 
+                        level1-1: [yyyy-MM-dd]  
+                        level1-2: [yyyy-MM-dd]  
+                        level2-1: [yyyy-MM-dd]  
+                        level2-2: [yyyy-MM-dd]  
+                        level2-3: [yyyy-MM-dd]  
+                        level3-1: [yyyy-MM-dd]  
+                        level3-2: [yyyy-MM-dd]  
+                        level3-3: [yyyy-MM-dd]  
+                        level4-1: [yyyy-MM-dd] 
+                        level4-2: [yyyy-MM-dd] 
+                        level4-3: [yyyy-MM-dd]  
+                        level5-1: [yyyy-MM-dd]  
+                        level5-2: [yyyy-MM-dd] 
+                        """
+
+                    )
+    
         #level1-2, level2-3, level3-3, level4-3の終了後には、予定に遅れた場合に備えてバッファータイムを設けてください。
         # LLM チェーンを作成（LLM ラッパーとプロンプトテンプレートから構成する）
         chain = LLMChain(llm=llm, prompt=prompt)

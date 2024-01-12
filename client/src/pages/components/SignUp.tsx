@@ -49,7 +49,7 @@ function SignUpButton() {
         }
     };
         return (
-            <button onClick={signInWithGoogle}>
+            <button className="bg-purple-400 hover:bg-pink-400 p-3 rounded-full font-bold transition duration-300 text-black" onClick={signInWithGoogle}>
                 <p>Googleで新規登録</p>
             </button>
             );

@@ -13,17 +13,17 @@ const HamburgerMenu = () => {
         <div className="fixed top-10 left-10 z-50">
             <div className="cursor-pointer p-4"  onClick={toggleMenu}>
                 {/* ハンバーガーメニューの線 */}
-                <div className="h-1 w-12 my-3 bg-blue-500"></div>
-                <div className="h-1 w-12 my-3 bg-blue-500"></div>
-                <div className="h-1 w-12 my-3 bg-blue-500"></div>
+                <div className="h-1 w-12 my-2 bg-blue-500"></div>
+                <div className="h-1 w-12 my-2 bg-blue-500"></div>
+                <div className="h-1 w-12 my-2 bg-blue-500"></div>
             </div>
             {isMenuOpen && (
                 <div className="absolute left-0 mt-12 pl-4 w-64">
-                <Link href="/" className="block px-4 py-2 md:text-4xl font-bold text-blue-500 hover:bg-gray-200">Home</Link>
-                <Link href="/user-setting" className="block px-4 py-2 md:text-4xl  font-bold  text-blue-500 hover:bg-gray-200">設定</Link>
-                <Link href="/get-plan" className="block px-4 py-2 md:text-4xl font-bold  text-blue-500 hover:bg-gray-200">計画立案</Link>
-                <Link href="/learning-record" className="block px-4 md:text-4xl font-bold  py-2 text-blue-500 hover:bg-gray-200">学習記録</Link>
-                <Link href="#" className="block px-4 py-2 md:text-4xl font-bold text-blue-500 hover:bg-gray-200">ログアウト</Link>
+                <Link href="/" className="block px-4 py-2 md:text-3xl font-bold text-blue-500 hover:bg-gray-200">ホーム</Link>
+                <Link href="/user-setting" className="block px-4 py-2 md:text-3xl  font-bold  text-blue-500 hover:bg-gray-200">設定</Link>
+                <Link href="/get-plan" className="block px-4 py-2 md:text-3xl font-bold  text-blue-500 hover:bg-gray-200">計画立案</Link>
+                <Link href="/learning-record" className="block px-4 md:text-3xl font-bold  py-2 text-blue-500 hover:bg-gray-200">学習記録</Link>
+                <Link href="#" className="block px-4 py-2 md:text-3xl font-bold text-blue-500 hover:bg-gray-200">ログアウト</Link>
             </div>
             )}
         </div>
