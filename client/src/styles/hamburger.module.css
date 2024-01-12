@@ -1,0 +1,43 @@
+/* styles/HamburgerMenu.module.css */
+
+.hamburgerMenu {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    padding: 10px;
+}
+
+.menuIcon {
+    cursor: pointer;
+}
+
+.bar {
+    width: 25px;
+    height: 3px;
+    background-color: #333;
+    margin: 6px 0;
+    transition: 0.4s;
+}
+
+.menuContent {
+    display: flex;
+    flex-direction: column;
+    position: absolute;
+    top: 60px;
+    right: 10px;
+    background-color: #fff;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+    padding: 10px;
+}
+
+.menuContent a {
+    text-decoration: none;
+    color: #333;
+    margin-bottom: 8px;
+    font-size: 18px;
+}
+
+/* メニューが開かれたときのアニメーション */
+.menuContent.show {
+    transform: translateY(0);
+}
