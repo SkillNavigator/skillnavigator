@@ -16,19 +16,20 @@
 ・ユーザー設定機能 <br>
 　　ユーザーがプログラミング学習歴や曜日ごとの学習可能時間を設定<br>
 ・計画立案機能　<br>
-　　LLMがユーザー設定機能で入力した個人の情報とプログラムの学習所要時間を組み合わせて個人にカスタマイズされた学習計画を立案<br>
+　　LLMがユーザー設定機能で入力した個人の情報とプログラムの学習所要時間を組み合わせて<br>
+　　個人にカスタマイズされた学習計画を立案<br>
 ・学習記録機能<br>
 　　ユーザーが学習した内容と学習時間を記録し進捗を管理<br>
 
 　　　
 ## システム構成
 
-![Alt text](image.png)
-
+![Alt text](image-1.png)
 
 ## 使用技術
 
-![Alt text](image-1.png)
+![Alt text](image.png)
+
 <br><br>
 NEXT.js: 14.0.4<br>
 TypeScript: 5<br>
@@ -40,7 +41,7 @@ langchain: 0.0.352<br>
 openai: 1.6.1<br>
 postgres: 15.5<br>
 Docker: 24.0.6<br>
-AWS EC2, ALB<br>
+AWS: EC2, ALB<br>
 
 
 
@@ -60,7 +61,7 @@ npm install
 ```
 
 
-### env ファイルの設定
+### .env ファイルの設定
 .env.example のテンプレートを使用してください
 
 ### コンテナ起動
@@ -70,4 +71,4 @@ docker　compose up -d --build
 
 ## デモ動画
 
-<video src="%E7%99%BA%E8%A1%A8%E5%8B%95%E7%94%BB/SkillNavigator%20%E7%99%BA%E8%A1%A8%E8%B3%87%E6%96%99%20.mp4" controls title="Title"></video>
+<video src="%E7%99%BA%E8%A1%A8%E5%8B%95%E7%94%BB/SkillNavigator%20%E7%99%BA%E8%A1%A8%E8%B3%87%E6%96%99_%E3%83%AD%E3%82%B0%E3%82%A4%E3%83%B3%E3%81%AA%E3%81%97.mp4" controls title="Title"></video>
