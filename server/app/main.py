@@ -461,7 +461,7 @@ async def create_llm_plan(request: Request, db: Session = Depends(get_db)):
                         """
 
                     )
-            else: #未経験以外のmust　よしこさん
+            else: #未経験以外のmust課題
                 if(user_setting.target_level == "Must課題までをマスター"):
                     prompt = PromptTemplate(
                         input_variables=["current_date","monday_study_time","tuesday_study_time","wednesday_study_time","thursday_study_time","friday_study_time","saturday_study_time","sunday_study_time","target_period","course_detail"],
@@ -600,7 +600,7 @@ async def create_llm_plan(request: Request, db: Session = Depends(get_db)):
 
                     )
     
-        else: #6か月　花子さん
+        else: #6か月
             if(user_setting.learning_history =="未経験"):
                 if(user_setting.target_level == "Must課題までをマスター"):
                     prompt = PromptTemplate(
