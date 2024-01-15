@@ -71,4 +71,4 @@ docker　compose up -d --build
 
 ## デモ動画
 
-<video src="%E7%99%BA%E8%A1%A8%E5%8B%95%E7%94%BB/SkillNavigator%20%E7%99%BA%E8%A1%A8%E8%B3%87%E6%96%99_%E3%83%AD%E3%82%B0%E3%82%A4%E3%83%B3%E3%81%AA%E3%81%97.mp4" controls title="Title"></video>
+<video src="video/SkillNavigatorVideo.mp4" controls title="Title"></video>
