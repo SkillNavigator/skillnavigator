@@ -1,6 +1,10 @@
 # SkillNavigator
 
-個別最適化された学習計画立案アプリケーション
+個別最適化された学習計画を立案してくれるアプリケーション
+
+
+## デモ動画
+https://github.com/SkillNavigator/skillnavigator/assets/115560089/0fcbeca9-5b0f-469c-8860-bc713200a651
 
 
 ## 開発背景
@@ -26,22 +30,25 @@
 
 ![Alt text](image-1.png)
 
+
+
+
 ## 使用技術
 
 ![Alt text](image.png)
 
 <br><br>
-NEXT.js: 14.0.4<br>
-TypeScript: 5<br>
-Tailwind CSS: 3.3.0<br>
-Firebase: 10.7.1<br>
-FastAPI: 0.105.0<br>
-Python: 3.11<br>
-langchain: 0.0.352<br>
-openai: 1.6.1<br>
-postgres: 15.5<br>
-Docker: 24.0.6<br>
-AWS: EC2, ALB<br>
+・NEXT.js: 14.0.4<br>
+・TypeScript: 5<br>
+・Tailwind CSS: 3.3.0<br>
+・Firebase: 10.7.1<br>
+・FastAPI: 0.105.0<br>
+・Python: 3.11<br>
+・langchain: 0.0.352<br>
+・openai: 1.6.1<br>
+・postgres: 15.5<br>
+・Docker: 24.0.6<br>
+・AWS: EC2, ALB<br>
 
 
 
@@ -69,6 +76,3 @@ npm install
 docker　compose up -d --build
 ```
 
-## デモ動画
-
-<video src="video/SkillNavigatorVideo.mp4" controls title="Title"></video>
