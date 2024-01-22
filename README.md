@@ -38,7 +38,7 @@ https://github.com/SkillNavigator/skillnavigator/assets/115560089/0fcbeca9-5b0f-
 
 ![Alt text](image.png)
 
-<br><br>
+<br>
 ・NEXT.js: 14.0.4<br>
 ・TypeScript: 5<br>
 ・Tailwind CSS: 3.3.0<br>
@@ -59,7 +59,6 @@ https://github.com/SkillNavigator/skillnavigator/assets/115560089/0fcbeca9-5b0f-
 ```
 git clone [リポジトリのURL]
 cd [クローンしたディレクトリ]
-
 ```
 
 ### Next.js
@@ -67,7 +66,6 @@ cd [クローンしたディレクトリ]
 cd client  # Next.js アプリケーションが含まれるディレクトリに移動
 npm install
 ```
-
 
 ### .env ファイルの設定
 .env.example のテンプレートを使用してください
