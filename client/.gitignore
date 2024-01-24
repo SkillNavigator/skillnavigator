@@ -7,3 +7,4 @@
 .pnp.js
 .yarn/install-state.gz
 .next
+src/pages/components/firebase.tsx
