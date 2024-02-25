@@ -1,7 +1,9 @@
 #現在の正規コード
 import uvicorn
 from fastapi import FastAPI, Depends, HTTPException, Request
-from .models import LLMAnswer, UserSetting, CourseDetail, User, Base,CompletedRecord, Record
+
+
+from  models import LLMAnswer, UserSetting, CourseDetail, User, Base,CompletedRecord, Record
 from dotenv import load_dotenv
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -30,6 +32,9 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 # FastAPIアプリケーションが初期化
 app = FastAPI()
+
+
+
 
 # 環境変数からデータベースURLを取得
 DATABASE_URL = os.environ.get("DATABASE_URL")

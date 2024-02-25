@@ -53,6 +53,7 @@
   margin: 20px auto; 上下に20pxのマージン、左右は自動で中央揃え
   その他のボタンのスタイル (例: padding, font-size, border, etc.)
 } */
+@import 'tailwindcss/tailwind.css';
 
 @tailwind base;
 @tailwind components;
