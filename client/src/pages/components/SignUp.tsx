@@ -1,5 +1,5 @@
 import React from 'react';
-import { auth, provider } from "./firebase";
+import { auth, provider } from "./../../firebase";
 import { FirebaseError } from 'firebase/app';
 import { signInWithPopup } from 'firebase/auth';
 import { useRouter } from 'next/router'; 

@@ -3,7 +3,7 @@ import uvicorn
 from fastapi import FastAPI, Depends, HTTPException, Request
 
 
-from  models import LLMAnswer, UserSetting, CourseDetail, User, Base,CompletedRecord, Record
+from  .models import LLMAnswer, UserSetting, CourseDetail, User, Base,CompletedRecord, Record
 from dotenv import load_dotenv
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -30,6 +30,9 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(level
 # ロギングの設定
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+
+
 # FastAPIアプリケーションが初期化
 app = FastAPI()
 
@@ -48,9 +51,9 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 # 環境変数を読み込む
 load_dotenv()  
 #OpenAIのAPIキーを環境変数から取得
-openai_api_key = os.getenv("OPENAI_API_KEY") 
+# openai_api_key = os.getenv("OPENAI_API_KEY") 
 #初期化　temperature揺れる回答を小さい数字で揺れなくしてる
-llm = OpenAI(model_name="gpt-3.5-turbo-instruct" , temperature=0.3)
+# llm = OpenAI(model_name="gpt-3.5-turbo-instruct" , temperature=0.3)
 # 今日の日付を取得
 current_date = datetime.date.today().isoformat()  # YYYY-MM-DD形式
 
