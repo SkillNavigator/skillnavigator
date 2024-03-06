@@ -3,10 +3,12 @@ import { getAuth, GoogleAuthProvider } from "firebase/auth";
 import { getFirestore } from 'firebase/firestore';
 import firebase from 'firebase/compat/app'; 
 
+// APIキーにこのキーで呼び出せる有効なAPIを制限する設定済み
 const firebaseConfig = {
-  apiKey:process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
-  authDomain:process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
   projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+
   storageBucket: "skill-navigator-8feca.appspot.com",
   messagingSenderId: "801448993987",
   appId: "1:801448993987:web:29b6a563bf7908f2ed6e76"
@@ -18,6 +20,8 @@ const auth = getAuth(app);
 const provider = new GoogleAuthProvider();
 //NOTE:GoogleAuthProviderポップアップでログインページが出てくる
 const firestore = getFirestore(app);
+
+
 
 // NOTE: 'firebase/auth' モジュールから FirebaseError をエクスポート
 export { auth, provider, firestore, firebase as default };
