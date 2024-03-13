@@ -38,7 +38,6 @@ app = FastAPI()
 
 
 
-
 # 環境変数からデータベースURLを取得
 DATABASE_URL = os.environ.get("DATABASE_URL")
 print("DATABASE_URL:", DATABASE_URL) 
@@ -66,18 +65,17 @@ app.add_middleware(
     allow_methods=["*"],  # ここで許可するHTTPメソッドを指定
     allow_headers=["*"],  # ここで許可するHTTPヘッダーを指定
 )
-
+# ユーザー情報を受け取るためのモデル
 class User(BaseModel):
     uid: str
     user_name: str
-
+# FAST APIを使用して新しいユーザーを作成するエンドポイントを定義する
 @app.post("/create_user")
 def create_user(user: User):
     logging.info("create_user関数が呼ばれました")
 
 
-
-    database_url = os.environ.get("DATABASE_URL", "postgresql://postgres:password@db:5432/postgres")
+    database_url = os.environ.get("DATABASE_URL", "postgresql://user_name:password@db:5432/user_name")
     conn = psycopg2.connect(database_url)
     cur = conn.cursor()
 
@@ -94,6 +92,9 @@ def create_user(user: User):
         conn.close()
 
     return {"message": "User created successfully"}
+
+
+
 
 # Pydanticモデルの定義（POSTリクエストのボディから受け取るデータ構造を定義する）
 class Course(BaseModel):
@@ -217,10 +218,13 @@ def get_db():
         db.close()
         print("Closing database session...")  # セッション終了ログ
 
+# user_id パラメータを受け取り、データベースから該当するユーザーの設定を取得して返すエンドポイント
 @app.get("/user-settings/{user_setting_id}")  # パスパラメータの設定
 def read_user_setting(user_setting_id: int, db: Session = Depends(get_db)):  # 依存関係としてデータベースセッションを注入
+    # crudモジュール内の　 get_user_setting 関数を呼び出す（ユーザー設定を取得）
     user_setting = crud.get_user_setting(db, user_setting_id=user_setting_id)
     print("user_setting_idddddddd:",user_setting_id)
+    # user_settingが空か存在しない状態の時
     if not user_setting:
         raise HTTPException(status_code=404, detail="User setting not found")
     return user_setting
@@ -228,6 +232,7 @@ def read_user_setting(user_setting_id: int, db: Session = Depends(get_db)):  # �
 
 @app.get("/course-details", response_model=List[schemas.CourseDetail])
 def read_course_details(db: Session = Depends(get_db)):
+   
     course_details = crud.get_course_details(db)
     return course_details  # ここでは直接データベースモデルを返しています。
 
@@ -262,7 +267,8 @@ def parse_llm_response(llm_response: str) -> List[schemas.PlanItem]:
     return plan_items
    
 
-
+# POSTリクエストを受け取ってLLMプランを作成するエンドポイントを定義
+# llmエンドポイントにPOSTリクエストがあった場合に関数が実行される
 @app.post("/llm-plan", response_model=schemas.LLMAnswer)
 async def create_llm_plan(request: Request, db: Session = Depends(get_db)):
     try:
