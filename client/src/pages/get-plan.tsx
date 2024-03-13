@@ -3,7 +3,9 @@ import React, { useState, useEffect } from 'react';
 import HamburgerMenu from './components/HamburgerMenu';
 
 const GetPlan  = () => {
-  const [schedules, setSchedules] = useState([]);
+  // const [schedules, setSchedules] = useState([]);
+  const [schedules, setSchedules] = useState<{ courseLevel: string; date: string; }[]>([]);
+
 
 
   const handlePlanClick = async () => {
@@ -32,7 +34,7 @@ const GetPlan  = () => {
 
     // planDataが配列を含むオブジェクトであることを確認
     if (planData && Array.isArray(planData.plan)) {
-      const mappedSchedules = planData.plan.map(item => ({
+      const mappedSchedules = planData.plan.map((item: any) => ({
         courseLevel: item.course_level,
         date: item.date,
       }));
@@ -67,6 +69,7 @@ return (
             <tbody className="divide-y-2 divide-black">
               {Array.isArray(schedules) && schedules.map((schedule, index) => (
                 <tr key={index} >
+
                   <td className="border-2 border-black px-6 py-3 md:text-2xl text-center text-xs font-medium text-black uppercase tracking-wider">{schedule.courseLevel}</td>
                   <td className="border-2 border-black px-6 py-3 md:text-2xl text-center text-xs font-medium text-black uppercase tracking-wider">{schedule.date}</td>
                 </tr>

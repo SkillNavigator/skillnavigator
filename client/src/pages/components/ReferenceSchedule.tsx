@@ -23,7 +23,7 @@ const data = [
 
 const ReferenceSchedule: React.FC = () => {
     const [completionStatus, setCompletionStatus] = useState<CompletionStatus>({});
-
+    const [studyTime, setStudyTime] = useState<number>(0); // studyTime を宣言して初期化
     const handleCompletionClick = async (rowIndex: number) => {
         setCompletionStatus((prevStatus) => ({
             ...prevStatus,
@@ -41,6 +41,7 @@ const ReferenceSchedule: React.FC = () => {
                 headers: {
                     'Content-Type': 'application/json',
                 },
+               
                 body: JSON.stringify({ studyTime }),
             });
 

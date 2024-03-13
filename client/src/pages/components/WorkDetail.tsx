@@ -68,7 +68,7 @@ const WorkDetail: React.FC = () => {
         <div className="square-container">
             <span className="text-inside">
                 <h2 className='font-bold text-blue-500 mt-8 mb-5 text-2xl'>実際の作業内容</h2>
-                <table border="1">
+                <table border={1}>
                     <thead>
                         <tr className='text-black'>
                             <th>学習日</th>

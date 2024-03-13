@@ -1,4 +1,4 @@
-// ボタン装飾　保存できない
+//Q4. 1日の学習時間を入力してください
 import React, { useState } from 'react';
 
 const LearningTarget: React.FC = () => {
@@ -7,13 +7,6 @@ const LearningTarget: React.FC = () => {
 
     // ボタンの状態を管理するための新しい状態
     const [isRegistered, setIsRegistered] = useState(false);
-
-    // 学習内容登録ボタンのクリックイベントハンドラ
-    const handleRegisterClick = () => {
-        // 学習内容の登録処理をここに実装
-        setIsRegistered(!isRegistered);  // ボタンの状態をトグルする
-    };
-
 
     // サーバーに学習時間データを送信する関数
     const sendStudyTime = async () => {
@@ -69,10 +62,12 @@ const LearningTarget: React.FC = () => {
                         ))}
                     </tbody>
                 </table>
-                {/* <button className={"bg-purple-400 hover:bg-pink-400 p-3 rounded-full font-bold transition duration-300 text-black"} onClick={sendStudyTime}>学習時間を保存する</button> */}
                 <button
                     className={`p-3 rounded-full font-bold transition duration-300 text-black mr-2 ${isRegistered ? 'bg-pink-400' : 'bg-purple-400'}`}
-                    onClick={handleRegisterClick}
+                    onClick={async () => {
+                        await sendStudyTime();
+                        setIsRegistered(!isRegistered);
+                    }}
                 >
                     {isRegistered ? '学習時間を保存完了' : '学習時間を保存する'}
                 </button>

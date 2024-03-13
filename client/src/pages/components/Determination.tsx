@@ -1,4 +1,4 @@
-// ボタン装飾　保存できない
+//Q5. 意気込みを入力してください
 import React, { useState } from 'react';
 // import './page.css';
 
@@ -8,11 +8,6 @@ const Determination: React.FC = () => {
     // ボタンの状態を管理するための新しい状態
     const [isRegistered, setIsRegistered] = useState(false);
 
-    // 学習内容登録ボタンのクリックイベントハンドラ
-    const handleRegisterClick = () => {
-        // 学習内容の登録処理をここに実装
-        setIsRegistered(!isRegistered);  // ボタンの状態をトグルする
-    };
 
     // サーバーに文字列を送信する関数
     const sendDetermination = async () => {
@@ -48,12 +43,12 @@ const Determination: React.FC = () => {
                     value={determinationText}
                     onChange={(e) => setDeterminationText(e.target.value)}
                 />
-                {/* 文字列をサーバーに送信するボタン */}
-                {/* <button className={"bg-purple-400 hover:bg-pink-400 p-3 rounded-full font-bold transition duration-300 text-black"} onClick={sendDetermination}>意気込みを保存する</button> */}
                 <button
-                    // style={{ float: 'right' }}
                     className={`p-3 rounded-full font-bold transition duration-300 text-black mr-2 ${isRegistered ? 'bg-pink-400' : 'bg-purple-400'}`}
-                    onClick={handleRegisterClick}
+                    onClick={async () => {
+                        await sendDetermination();
+                        setIsRegistered(!isRegistered);
+                    }}
                 >
                     {isRegistered ? '内容登録完了' : '学習内容登録'}
                 </button>
@@ -64,7 +59,6 @@ const Determination: React.FC = () => {
 
 
 export default Determination;
-
 // ボタン変更前　動くコード
 // import React, { useState } from 'react';
 // // import './page.css';

@@ -68,7 +68,7 @@
 
 // export default UserSetting;
 
-
+// ユーザー設定ができたことをサーバーに通知し、その結果に応じて別のページに遷移する機能
 // ページ遷移は保存ができたら実行される
 import React from 'react';
 import Link from 'next/link';
